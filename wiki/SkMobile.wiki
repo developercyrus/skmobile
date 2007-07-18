@@ -1,0 +1,1 @@
+#SkMobile is a Windows Mobile port of [http://sk.idm.fr/opensource/ IDM SK]
