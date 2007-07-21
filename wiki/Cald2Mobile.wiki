@@ -3,7 +3,11 @@
 
 = 简介 =
 
-Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile 5的移植。Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必须购买CALD2的光盘以便获得CALD2的词典数据。
+Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile 5的移植。
+
+开发Cald2Mobile的目的是希望能够引起大家对SkMobile的注意，能够使用开放源码的SkMobile开发出更多更好的词典。同时由于SkMobile的格式是开放的，因此从SkMobile的格式转换到其他的格式也非常的容易。
+
+Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必须购买CALD2的光盘以便获得CALD2的词典数据。
 
 
 = 安装指南 =
@@ -37,6 +41,64 @@ Cald2Mobile目前的配置全部位于sk.ini文件中。
 
 = 使用指南 =
 
+  * 词条列表页面（Wordlist）
+    当运行Cald2Mobile后，首先显示的是wordlist页面。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Initial.jpg 
+
+在输入框中输入字符后，wordlist页面将会自动更新，并选中符合的单词，或者是最接近的单词。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Wordlist.jpg
+
+在词条列表页面列表页面，左右键被用做前一页和后一页的功能。上下键在同一页的词条间跳转。
+
+  * 查询模式
+    按下输入框旁边的M按钮，可以选择查询模式。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。
+  * 查询结果页面（Results）
+    在输入框中输入字符后，按下输入框旁边的M按钮或回车键或是action键或是直接在wordlist页面中选择，都将触发查询操作。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Search.jpg
+
+查询操作将返回所有符合查询模式的结果。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Results.jpg
+
+Cald2Mobile会自动识别出单词的动词变化和复数变化。例如搜索“made”会出现“make”的词条。
+
+Cald2Mobile同时还支持“×”和“？”的通配符检索。不过使用通配符将可能导致比较长的检索时间。
+
+在查询结果页面（Results），左右键被用做前一页和后一页的功能。上下键在同一页的词条间跳转。
+
+  * 词条解释页面  （Content）
+  在查询结果页面（Results）中选择某一词条，将会跳转到词条解释页面（Content）。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Content.jpg
+
+如果在词条解释页面（Content）点击ExtraExamples、WordBuilding、Collocations、VerbInflections、CommonLearnerError和UsageNote按钮或是其他Link，词条解释页面（Content）将跳转到下一页面。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Links.jpg
+
+这时可以使用左右键在浏览历史中跳转。上下键在同一页中PageUp/PageDown。
+
+  * 发音
+  如果在词条解释页面（Content）点击喇叭标志，将触发真人MP3发音。
+
+http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Pron.jpg
+
+Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+
+  * 取词
+  取词操作分为在Cald2Mobile内取词和Cald2Mobile外取词两种。
+
+Cald2Mobile内取词，只需要选中希望取词的内容，然后按Action键，即可。
+
+Cald2Mobile外取词则需要选中希望取词的内容，然后按TaskBar上的取词按钮，Cald2Mobile将自动跳到前台。需要返回时选择Menu中的“Back To Previous Application”即可返回原程序。
+
+Cald2Mobile的取词功能在Word、PIE、SuperMemo、MeReader、Adobe Reader等程序上测试成功。
+
+  * 保存页面
+选择Menu中的“Save Current Content”，Cald2Mobile将把当前选中的Tab的内容保存在PDA的“\content.html”文件里。
+
 
 = Cald2Mobile vs MDict =
 
@@ -60,7 +122,18 @@ Cald2Mobile的缺点：
   * 目前仅支持单词典
     Cald2Mobile目前仅支持CALD2。这是优点同时也是缺点。不过基于CALD2相同的IDM SK技术的词典还有LDOCE2和OALD7。而且通过SkProd，用户也可以自己制作词典。MDict拥用丰富的词典资源，而且支持从更丰富的StarDict之间的转换。
   * 性能相比MDict差
-    Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音时有时显得响应很慢。部分单词在在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+    Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+
+
+
+
+
+
+
+
+
+
+
 
 
 
