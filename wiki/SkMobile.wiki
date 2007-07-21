@@ -1,1 +1,1 @@
-#summary SkMobile is a Windows Mobile port of [http://sk.idm.fr/opensource/ IDM SK]
+#summary SkMobile is a Windows Mobile port of IDM SK
