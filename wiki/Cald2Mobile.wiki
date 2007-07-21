@@ -13,3 +13,30 @@ Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile
   * Automatic links to other wiki pages
 
 = 使用指南 =
+
+= Cald2Mobile vs MDict =
+
+MDict是WM平台上流行的词典程序。Cald2Mobile和MDict各有优缺点。
+
+Cald2Mobile的优点：
+  * 开放源代码。
+    Cald2Mobile是基于GPL2.0的应用程序，MDict目前可以免费下载，但并不开放源代码。
+  * 更美观。
+    Cald2Mobile使用XML+XSLT+CSS来显示词条解释。尽可能的保留了CALD2的外观，词条解释看上去更美观舒适。而且XSLT和CSS可编辑，用户可以根据自己的需要，自定义显示效果。MDict使用静态HTML，不能更改显示效果。而且在词典转换时丢失了许多格式信息。
+  * 内容更丰富。
+    除基本的词条解释外，Cald2Mobile保留了CALD2的ExtraExamples、WordBuilding、Collocations、VerbInflections、CommonLearnerError和UsageNote。
+  * 真人MP3美英发音
+    Cald2Mobile保留了CALD2的真人MP3美音和英音发音功能。MDict本身并不支持发音功能。
+  * 全文查找
+    Cald2Mobile保留了CALD2的全文查找功能。用户可以通过选择查询模式进行全文查找。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。MDict不支持全文查找。
+  
+Cald2Mobile的缺点：    
+  * 目前只支持WM5
+    Cald2Mobile目前只支持WM5及更高版本。PocketPC 2003由于仅提供MSXML2.0不支持XSLT，所以Cald2Mobile无法运行。不过如果使用jfdict中移植到PocketPC平台上的libxml和libxslt，Cald2Mobile应该可以支持PocketPC 2003。SmartPhone 2003除了上述XSLT的问题外，还不支持Cald2Mobile的Tab Controls。MDict支持绝大多数的Windows PDA平台。
+  * 目前仅支持单词典
+    Cald2Mobile目前仅支持CALD2。这是优点同时也是缺点。不过基于CALD2相同的IDM SK技术的词典还有LDOCE2和OALD7。而且通过SkProd，用户也可以自己制作词典。MDict拥用丰富的词典资源，而且支持从更丰富的StarDict之间的转换。
+  * 性能相比MDict差
+    Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音时有时显得响应很慢。部分单词在在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+
+
+
