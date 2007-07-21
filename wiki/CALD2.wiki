@@ -1,4 +1,5 @@
 #summary CALD2的全称是Cambridge Advanced Learner's Dictionary，由剑桥大学出版社出版的英英学习型辞典。
+#labels Phase-Support,Chinese
 
 关于CALD2的详细介绍请参考[http://www.cambridge.org/elt/dictionaries/cald.htm CALD2官方网站] 和 [http://georgechen.idv.tw/wordpress/?p=25 George Chen的CALD2使用心得]
 
