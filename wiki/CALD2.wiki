@@ -1,0 +1,5 @@
+#summary [http://www.cambridge.org/elt/dictionaries/cald.htm CALD2]全称是Cambridge Advanced Learner's Dictionary，由剑桥大学出版社出版的英英学习型辞典。
+
+关于CALD2的详细介绍请参考http://www.cambridge.org/elt/dictionaries/cald.htm 和 [http://georgechen.idv.tw/wordpress/?p=25 CALD2使用心得]
+
+CALD2的光盘是基于IDM SK实现的。
