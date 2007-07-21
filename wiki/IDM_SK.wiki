@@ -14,7 +14,6 @@
   * SkCore 一组通用代码用于所有的Sk项目。
   * SkFind Sk的搜索引擎
   * SkProd 用于准备最终发布的供SkFind使用的数据。
-请访问http://sk.idm.fr/opensource/获得更详细的信息。
-
+请访问http://sk.idm.fr/opensource/ 获得更详细的信息。
 
 
