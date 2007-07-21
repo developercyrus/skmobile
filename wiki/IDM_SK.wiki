@@ -1,5 +1,5 @@
+#summary IDM SK 是法国公司IDM开发的一组编辑与出版工具和类库.
 #labels Chinese,Phase-Support
-#IDM SK 是法国公司IDM开发的一组编辑与出版工具和类库.
 
 = 简介 =
   IDM 是一家法国软件公司，为英国和法国的出版社提供编辑与出版工具。
@@ -15,5 +15,4 @@
   * SkFind Sk的搜索引擎
   * SkProd 用于准备最终发布的供SkFind使用的数据。
 请访问http://sk.idm.fr/opensource/ 获得更详细的信息。
-
 
