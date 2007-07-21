@@ -1,0 +1,15 @@
+#summary Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile 5的移植。
+#labels Phase-Support,Chinese
+
+= 简介 =
+
+Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile 5的移植。Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必须购买CALD2的光盘以便获得CALD2的词典数据。
+
+
+= 安装指南 =
+
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
+
+= 使用指南 =
