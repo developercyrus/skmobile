@@ -124,9 +124,15 @@ Cald2Mobile的缺点：
   * 性能相比MDict差
     Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
 
-
-
-
+= 联系方式 =
+如果你有任何问题，可以通过多种方式和开发人员联系：
+  # 讨论组。
+    如果你有使用上的问题，请访问 http://groups.google.com/group/skmobil-user/ 或直接发送邮件到 skmobil-user@googlegroups.com 。热心的skmobil用户和开发人员将会尽快回答你的问题。
+  # issue。
+    如果是Bug或者变更请求，请访问 http://code.google.com/p/skmobile/issues/list ，创建一个新的issue。
+    提交Bug时请详细的描述你的操作系统，重现Bug的步骤。如果有必要的话，请提交你的配置文件、日志文件和数据目录的截图。
+  # 邮件。
+    其它问题你也可以直接发送邮件到 dev.skmobile@gmail.com 和开发人员联系。
 
 
 
