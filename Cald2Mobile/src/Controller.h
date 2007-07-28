@@ -20,6 +20,8 @@ public :
 
 	virtual LRESULT OnSaveContentHtml(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) = 0;
 
+	virtual LRESULT OnSaveContentXml(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) = 0;
+
 	// virtual LRESULT OnActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) = 0;
 
 	virtual LRESULT OnInputChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) = 0;

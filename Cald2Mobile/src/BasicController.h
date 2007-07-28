@@ -12,7 +12,16 @@ public :
 
 
 	BasicController() : m_lastInputPannelStatus(FALSE), m_isSearching(FALSE), m_inputChangedTimer(0)
-	{}
+	{
+		this->m_lock = PR_NewLock();
+	}
+
+
+
+	virtual ~BasicController()
+	{
+		PR_DestroyLock(this->m_lock);
+	}
 
 
 
@@ -45,11 +54,12 @@ public :
 
 			::EnableMenuItem(m_mainFrame->m_mainMenu, ID_BACK_LAST_APP, MF_BYCOMMAND | MF_ENABLED);
 
+			::SetForegroundWindow(*m_mainFrame);
+
 			DWORD size = pCopyDataStruct->cbData;
 			TCHAR * data = (TCHAR *)pCopyDataStruct->lpData;
 			CAtlString pickWord(data, size);
 			doLookup(pickWord);
-			::SetForegroundWindow(*m_mainFrame);
 		}
 		return S_OK;
 	}
@@ -82,6 +92,13 @@ public :
 		FILE * savedFile = _wfopen(_T("content.html"), _T("w"));
 		fwrite(utf8Html.c_str(), sizeof (char), utf8Html.size(), savedFile);
 		fclose(savedFile);
+		return S_OK;
+	}
+
+
+
+	virtual LRESULT OnSaveContentXml(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
 		return S_OK;
 	}
 
@@ -176,6 +193,8 @@ public :
 				_T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
 			return S_OK;
 		}
+
+		PR_Lock(m_lock);
 		m_isHandlingHotspot = TRUE;
 			
 		NM_HTMLVIEWA * pnmHTMLView = (NM_HTMLVIEWA *)pnmh;
@@ -220,6 +239,8 @@ public :
 				(TCHAR const*)szHREFText, (TCHAR const*)szPostData, e.errorMsg().c_str());
 		}
 		m_isHandlingHotspot = FALSE;
+		PR_Unlock(m_lock);
+
 		return S_OK;
 	}
 
@@ -357,6 +378,8 @@ protected :
 			m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
 			return;
 		}
+		
+		PR_Lock(m_lock);
 		m_isSearching = TRUE;
 
 		m_view->m_wndInput.GetWindowText(m_queryString);
@@ -373,6 +396,8 @@ protected :
 		// Just only one query can be do.
 		handleLookup(m_queryString, m_queryMode);
 		m_isSearching = FALSE;
+		PR_Unlock(m_lock);
+
 		return;
 	}
 
@@ -799,5 +824,7 @@ protected :
 	CSimpleArray<CAtlString>	m_queryModes;
 
 	UINT_PTR			m_inputChangedTimer;
+
+	PRLock *			m_lock;
 
 };

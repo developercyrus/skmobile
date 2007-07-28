@@ -266,6 +266,8 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 
 			PRUint32 count = 0;
 			err = oDeflectedCursor->GetCount(&count);
+			if(err != noErr)
+				THROW_RUNTIME_EXCEPTION ( "Failed to get the count of deflected document list. queryString = " << input.c_str()) ;
 			for (PRUint32 i = 0; i < count; i++) 
 			{
 				PRUint32 iPosition = 0;
@@ -279,9 +281,14 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 		{
 			PRUint32 pos = 0;
 			err = this->deflecTab->LookupText(input.c_str(), skflmEXACT, &pos);
-			skPtr<SKCursor> xiDeflectCursor = GetCursorFromTable(this->deflecTab, pos, "r_clid", "clid");
-			xiDeflectCursor = SortCursor(xiDeflectCursor);
-			searchResult->Merge(xiDeflectCursor, skfopOR);
+			if(err != err_notfound)
+			{
+				if(err != noErr)
+					THROW_RUNTIME_EXCEPTION ( "Failed to lookup '" << input.c_str() << "' in  deflecTab.") ;
+				skPtr<SKCursor> xiDeflectCursor = GetCursorFromTable(this->deflecTab, pos, "r_clid", "clid");
+				xiDeflectCursor = SortCursor(xiDeflectCursor);
+				searchResult->Merge(xiDeflectCursor, skfopOR);
+			}
 		}
 	}
 

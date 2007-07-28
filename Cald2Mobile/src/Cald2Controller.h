@@ -58,6 +58,13 @@ public :
 			m_history.RemoveHead();
 	}
 
+	CAtlString GetCurrent()
+	{
+		if(m_history.IsEmpty())
+			return  _T("");
+		return m_history.GetAt(m_pos);
+	}
+
 	CAtlString GetNext()
 	{
 		CAtlString const& value = m_history.GetNext(m_pos);
@@ -309,6 +316,30 @@ public :
 
 
 
+	virtual LRESULT OnSaveContentXml(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		CAtlString currentUrlPath = m_contentHistory.GetCurrent();
+		if(currentUrlPath.IsEmpty())
+		{
+			CAtlString msg;
+			msg.Format(_T("The content tab is empty!!!"), m_queryString);
+			m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
+			return S_OK;
+		}
+		ContentData result;
+		BOOL rc = loadContentData(currentUrlPath, result);
+		if(rc)
+		{
+			std::string utf8 = CW2A(result.content, CP_UTF8);
+			FILE * savedFile = _wfopen(_T("content.xml"), _T("w"));
+			fwrite(utf8.c_str(), sizeof (char), utf8.size(), savedFile);
+			fclose(savedFile);			
+		}
+		return S_OK;
+	}
+
+
+
 	virtual LRESULT OnDocumentComplete(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 	{
 		Base::OnDocumentComplete(idCtrl, pnmh, bHandled);
@@ -515,6 +546,13 @@ public :
 
 protected :
 
+	struct ContentData
+	{
+		CAtlString content;
+		BOOL isXml;
+		CAtlString archor;
+	};
+
 	virtual void handleLookup(CAtlString const& queryString, UINT queryModes)
 	{
 		try
@@ -541,7 +579,18 @@ protected :
 
 			getQueryService()->query((TCHAR const*)queryString, true, types, bUseDeflect);
 
-			setResultPage(0);
+			UINT count = getQueryService()->getResultCount();
+			if(0 < count)
+			{
+				setResultPage(0);
+			} 
+			else
+			{
+				CAtlString notFound;
+				notFound.Format(_T("Failed to find '%s'"), m_queryString);
+				Base::setTabTextContent(TAB_NAME_RESULTS, notFound);
+			}
+			
 		}
 		catch (truntime_error& e)
 		{
@@ -654,104 +703,19 @@ protected :
 	{
 		try
 		{
-			int pos = urlPath.Find(_T(':'));
-			CAtlString protocal = urlPath.Mid(0, pos);
-
-			CAtlString content;
-			BOOL isXml;
-			CAtlString archor;
-			if(protocal == _T("sk"))
+			ContentData result;
+			BOOL rc = loadContentData(urlPath, result);
+			if(rc)
 			{
-				// skip '://fs/2.0/'
-				CAtlString prefix = urlPath.Mid(pos, 10);
-				if(prefix != _T("://fs/2.0/"))
-				{
-					// unsupported SK protocal
-					skConsoleLog::Log(_T("unsupported SK protocal. urlPath = %s"), urlPath);
-					return FALSE;
-				}
-
-				CAtlString fullPath = urlPath.Mid(pos + 10);
-
-				// extract it
-				char utf8Path[2048] = {0};
-				int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
-				string utf8FullPath(utf8Path, len);
-				int filesystemSplit = utf8FullPath.find('!');
-				int archorSplit = utf8FullPath.find('#');
-				string filesystem = utf8FullPath.substr(0, filesystemSplit);
-				// skip '!/'
-				string path = utf8FullPath.substr(filesystemSplit + 2, archorSplit - filesystemSplit - 2);
-				// skip '#'
-				string utf8Archor = utf8FullPath.substr(archorSplit + 1);
-				archor = CA2W(utf8Archor.c_str(), CP_UTF8);
-
-				std::string contentData;
-				getFileSystemService()->getTextFileData(filesystem, path, contentData);
-
-				if(filesystem == "data/entry/filesystem.cff")
-				{
-					isXml = TRUE;
-					ostringstream buf;
-					buf << "<skshell root='" << m_setting.GetRootPathCString() << "'>"
-						<< "<content>"
-						<< contentData
-						<< "</content>"
-						<< "</skshell>";
-					string utf8 = buf.str();
-
-					content = CA2W(utf8.c_str(), CP_UTF8);
-				}
+				if(result.isXml)
+					Base::setTabXmlContent(TAB_NAME_CONTENT, result.content);
 				else
-				{
-					isXml = FALSE;
-					content = CA2W(contentData.c_str(), CP_UTF8);
-					// extract HTML Body
-					int bodyBeg = content.Find(_T("<body"));
-					if(-1 != bodyBeg)
-						bodyBeg = content.Find(_T('>'), bodyBeg);
-					int bodyEnd = content.Find(_T("</body>"));
-					if(-1 != bodyBeg && -1 != bodyEnd)
-					{
-						content = content.Mid(bodyBeg + 1, bodyEnd - bodyBeg - 1);
-					}
-				}
-			} else if(protocal == _T("file"))
-			{
-				// skip '://'
-				CAtlString fullPath = urlPath.Mid(pos + 3);
-
-				CAtlFile file;
-				HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
-				if(S_OK != rc)
-				{
-					skConsoleLog::Log(_T("File isn't existance. urlPath = %s"), urlPath);
-					return FALSE;
-				}
-				ULONGLONG size = 0;
-				file.GetSize(size);
-				LPTSTR buffer = content.GetBufferSetLength((int)(size + 1));
-				file.Read(buffer, (int)size);
-			} else
-			{
-				// unsupported protocal
-				skConsoleLog::Log(_T("unsupported protocal. urlPath = %s"), urlPath);
-				return FALSE;
+					Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
+				if(!result.archor.IsEmpty() && _T("0") != result.archor)
+					Base::htmlAnchor(result.archor);
+				return TRUE;
 			}
-
-			if(content.IsEmpty())
-			{
-				skConsoleLog::Log(_T("Failed to load file data. urlPath = %s"), urlPath);
-				return FALSE;
-			}
-
-			if(isXml)
-				Base::setTabXmlContent(TAB_NAME_CONTENT, content);
-			else
-				Base::setTabHtmlContent(TAB_NAME_CONTENT, content);
-			if(!archor.IsEmpty() && _T("0") != archor)
-				Base::htmlAnchor(archor);
-			return TRUE;
+			return FALSE;
 		}
 		catch (truntime_error& e)
 		{
@@ -936,7 +900,9 @@ protected :
 		try
 		{
 			if(begin >= count || begin < 0)
+			{
 				return;
+			}
 
 			m_currentResultsBegin = begin;
 			UINT offset = min(count - m_currentResultsBegin, m_setting.GetResultsPageSize());
@@ -1037,6 +1003,109 @@ protected :
 			skConsoleLog::Log(_T("Failed to init word list. error=%s"), e.errorMsg().c_str());
 		}
 		return;
+	}
+
+
+
+	BOOL loadContentData(CAtlString const& urlPath, ContentData & result)
+	{
+		try
+		{
+			int pos = urlPath.Find(_T(':'));
+			CAtlString protocal = urlPath.Mid(0, pos);
+
+			if(protocal == _T("sk"))
+			{
+				// skip '://fs/2.0/'
+				CAtlString prefix = urlPath.Mid(pos, 10);
+				if(prefix != _T("://fs/2.0/"))
+				{
+					// unsupported SK protocal
+					skConsoleLog::Log(_T("unsupported SK protocal. urlPath = %s"), urlPath);
+					return FALSE;
+				}
+
+				CAtlString fullPath = urlPath.Mid(pos + 10);
+
+				// extract it
+				char utf8Path[2048] = {0};
+				int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
+				string utf8FullPath(utf8Path, len);
+				int filesystemSplit = utf8FullPath.find('!');
+				int archorSplit = utf8FullPath.find('#');
+				string filesystem = utf8FullPath.substr(0, filesystemSplit);
+				// skip '!/'
+				string path = utf8FullPath.substr(filesystemSplit + 2, archorSplit - filesystemSplit - 2);
+				// skip '#'
+				string utf8Archor = utf8FullPath.substr(archorSplit + 1);
+				result.archor = CA2W(utf8Archor.c_str(), CP_UTF8);
+
+				std::string contentData;
+				getFileSystemService()->getTextFileData(filesystem, path, contentData);
+
+				if(filesystem == "data/entry/filesystem.cff")
+				{
+					result.isXml = TRUE;
+					ostringstream buf;
+					buf << "<skshell root='" << m_setting.GetRootPathCString() << "'>"
+						<< "<content>"
+						<< contentData
+						<< "</content>"
+						<< "</skshell>";
+					string utf8 = buf.str();
+
+					result.content = CA2W(utf8.c_str(), CP_UTF8);
+				}
+				else
+				{
+					result.isXml = FALSE;
+					result.content = CA2W(contentData.c_str(), CP_UTF8);
+					// extract HTML Body
+					int bodyBeg = result.content.Find(_T("<body"));
+					if(-1 != bodyBeg)
+						bodyBeg = result.content.Find(_T('>'), bodyBeg);
+					int bodyEnd = result.content.Find(_T("</body>"));
+					if(-1 != bodyBeg && -1 != bodyEnd)
+					{
+						result.content = result.content.Mid(bodyBeg + 1, bodyEnd - bodyBeg - 1);
+					}
+				}
+			} else if(protocal == _T("file"))
+			{
+				// skip '://'
+				CAtlString fullPath = urlPath.Mid(pos + 3);
+
+				CAtlFile file;
+				HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
+				if(S_OK != rc)
+				{
+					skConsoleLog::Log(_T("File isn't existance. urlPath = %s"), urlPath);
+					return FALSE;
+				}
+				ULONGLONG size = 0;
+				file.GetSize(size);
+				LPTSTR buffer = result.content.GetBufferSetLength((int)(size + 1));
+				file.Read(buffer, (int)size);
+			} else
+			{
+				// unsupported protocal
+				skConsoleLog::Log(_T("unsupported protocal. urlPath = %s"), urlPath);
+				return FALSE;
+			}
+
+			if(result.content.IsEmpty())
+			{
+				skConsoleLog::Log(_T("Failed to load file data. urlPath = %s"), urlPath);
+				return FALSE;
+			}
+			return TRUE;
+		}
+		catch (truntime_error& e)
+		{
+			skConsoleLog::Log(_T("Failed to load content. urlPath = %s, cause = %s"),
+				urlPath, e.errorMsg().c_str());
+			return FALSE;
+		}
 	}
 
 

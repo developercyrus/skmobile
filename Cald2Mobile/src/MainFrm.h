@@ -71,6 +71,8 @@ public:
 		COMMAND_ID_HANDLER(ID_BACK_LAST_APP,m_view.m_controller->OnBackLastApplication)
 		COMMAND_ID_HANDLER(ID_SAVE_CURRENT_CONTENT,
 											m_view.m_controller->OnSaveContentHtml)
+		COMMAND_ID_HANDLER(ID_MENU_SAVECONTENTTABXML,
+											m_view.m_controller->OnSaveContentXml)
 		CHAIN_MSG_MAP(CAppWindow<CMainFrame>)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)

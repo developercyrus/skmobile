@@ -245,6 +245,12 @@
     </span>
   </xsl:template>
 
+  <xsl:template match="label/p:v">
+    <span class="v">
+      <xsl:apply-templates />
+    </span>
+  </xsl:template>
+
   <xsl:template match="p:b">
     <b>
       <xsl:apply-templates />
