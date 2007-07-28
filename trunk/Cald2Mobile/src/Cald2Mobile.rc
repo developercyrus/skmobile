@@ -56,7 +56,8 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "Menu"
     BEGIN
-        MENUITEM "Save Current Content",        ID_SAVE_CURRENT_CONTENT
+        MENUITEM "Save Content Tab XML",        ID_MENU_SAVECONTENTTABXML
+        MENUITEM "Save Current Tab Content",    ID_SAVE_CURRENT_CONTENT
         MENUITEM "Back To Previous Application", ID_BACK_LAST_APP, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "About SKMobile",              ID_APP_ABOUT
@@ -87,7 +88,7 @@ CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Cald2Mobile v0.5",IDC_STATIC,38,10,70,8,SS_NOPREFIX
+    LTEXT           "Cald2Mobile v0.51",IDC_STATIC,38,10,70,8,SS_NOPREFIX
     LTEXT           "License: GPL 2.0",IDC_STATIC,38,25,70,8
 END
 
@@ -190,7 +191,7 @@ END
 STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "Cald2Mobile"
-    IDS_VERSION             "0.5"
+    IDS_VERSION             "0.51"
 END
 
 STRINGTABLE 
