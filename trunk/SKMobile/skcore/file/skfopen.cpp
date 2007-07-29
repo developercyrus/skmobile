@@ -137,8 +137,18 @@ SKAPI SKERR FindFileInEnvirPath(const char* pszFile, char** ppszResult)
     if(err != noErr)
         return err;
 
-    char* pszPath = NULL;
-    err = pEnvir->GetValue("PATH", &pszPath);
+	char* pszPath = NULL;
+	// first try it in SK_HOME
+	err = pEnvir->GetValue(SK_HOME_ENVIR_VAR, &pszPath);
+	if(err != noErr)
+		return err;
+	err = FindFileInPath(pszFile, pszPath, ppszResult);
+	PL_strfree(pszPath);
+	if(err == noErr)
+		return noErr;
+
+	// then try it in PATH
+	err = pEnvir->GetValue("PATH", &pszPath);
     if(err != noErr)
          return err;
 

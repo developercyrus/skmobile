@@ -192,7 +192,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="%CSIDL_PROGRAM_FILES%\Cald2Mobile\"
 				RegisterOutput="0"
 				AdditionalFiles="atl80.dll|$(VCInstallDir)ce\dll\$(INSTRUCTIONSET)\|%CSIDL_WINDOWS%|0;"
 			/>
@@ -544,6 +544,30 @@
 			</File>
 			<File
 				RelativePath=".\src\res\PickButton.ico"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="cald2"
+			>
+			<File
+				RelativePath="..\dist\windows mobile 5.0 pocket pc sdk (armv4i)\cald2mobile\cald2\cald2.xsl"
+				>
+			</File>
+			<File
+				RelativePath="..\dist\windows mobile 5.0 pocket pc sdk (armv4i)\cald2mobile\cald2\cald2_QVGA.html"
+				>
+			</File>
+			<File
+				RelativePath="..\dist\windows mobile 5.0 pocket pc sdk (armv4i)\cald2mobile\cald2\cald2_VGA.html"
+				>
+			</File>
+			<File
+				RelativePath="..\dist\windows mobile 5.0 pocket pc sdk (armv4i)\cald2mobile\cald2\entry_QVGA.css"
+				>
+			</File>
+			<File
+				RelativePath="..\dist\windows mobile 5.0 pocket pc sdk (armv4i)\cald2mobile\cald2\entry_VGA.css"
 				>
 			</File>
 		</Filter>

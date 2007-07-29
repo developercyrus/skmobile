@@ -46,10 +46,11 @@ void skConsoleLog::Init()
     m_pLock = PR_NewLock();
 
 	// remove exist logfile
-	const char* pcFile = getLogFile();
-	if(pcFile && *pcFile)
+	char const* pcFile = getLogFile();
+	if(pcFile)
 	{
 		PR_Delete(pcFile);
+		PL_strfree((void*)pcFile);
 	}
 }
 
@@ -93,7 +94,7 @@ void skConsoleLog::vLog(const char *pszFormat, va_list ap)
         return;
     PR_Lock(m_pLock);
 	const char* pcFile = getLogFile();
-	if(pcFile && *pcFile)
+	if(pcFile)
     {
         FILE * f = fopen(pcFile, "a");
         if(f)
@@ -101,6 +102,7 @@ void skConsoleLog::vLog(const char *pszFormat, va_list ap)
             vfprintf(f, pszFormat, ap);
 		}
         fclose(f);
+		PL_strfree((void*)pcFile);
     }
     PR_Unlock(m_pLock);
 #endif
@@ -147,7 +149,7 @@ void skConsoleLog::vLog(const wchar_t *pszFormat, va_list ap)
 	PR_Lock(m_pLock);
 
 	const char* pcFile = getLogFile();
-	if(pcFile && *pcFile)
+	if(pcFile)
 	{
 		FILE * f = fopen(pcFile, "a");
 		if(f)
@@ -155,6 +157,7 @@ void skConsoleLog::vLog(const wchar_t *pszFormat, va_list ap)
 			vfwprintf(f, pszFormat, ap);
 		}
 		fclose(f);
+		PL_strfree((void*)pcFile);
 	}
 	PR_Unlock(m_pLock);
 #endif
@@ -188,13 +191,35 @@ const char * skConsoleLog::getLogFile()
 {
 	SKEnvir *pEnvir = NULL;
 	SKERR err = SKEnvir::GetEnvir(&pEnvir);
-	if(err == noErr)
+	if(err != noErr)
+		return NULL;
+
+	char* pcFile = NULL;
+	err = pEnvir->GetValue(SK_LOG_FILE, &pcFile);
+	if(err != noErr)
+		return NULL;
+
+	if(NULL == pcFile || 0 == strlen(pcFile) )
 	{
-		char* pcFile = NULL;
-		err = pEnvir->GetValue(SK_LOG_FILE, &pcFile);
-		if(err == noErr)
-			return pcFile;
+		pcFile = "sk.log";
 	}
 
-	return "sk.log";
+	if(pcFile[0] != '/' && pcFile[0] != '\\')
+	{
+		// It's a relative path, convert it to absolute path.
+		char* skHome = NULL;
+		err = pEnvir->GetValue(SK_HOME_ENVIR_VAR, &skHome);
+		if(err != noErr)
+			return NULL;
+		
+		size_t len = strlen(skHome) + strlen(pcFile) + 2;
+		char * fullPath = (char *)PR_Malloc(len);
+		sprintf(fullPath, "%s/%s", skHome, pcFile);
+		pcFile = fullPath;
+	}
+	else
+	{
+		pcFile = PL_strdup(pcFile);
+	}
+	return pcFile;
 }

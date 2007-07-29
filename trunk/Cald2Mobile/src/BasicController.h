@@ -221,6 +221,8 @@ public :
 						&unescapePostDataLength, 
 						sizeof unescapePostDataBuf / sizeof TCHAR);
 					value = CAtlString(unescapePostDataBuf, unescapePostDataLength);
+					// the 'AtlUnescapeUrl' cann't translate '+' to 'space'
+					value.Replace(_T('+'), _T(' '));
 
 					params.Add(value);
 
