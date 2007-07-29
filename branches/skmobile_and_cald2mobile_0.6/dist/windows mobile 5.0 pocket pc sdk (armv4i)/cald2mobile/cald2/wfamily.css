@@ -1,0 +1,56 @@
+  BODY  {
+	color : black;
+	background-color : white;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	font-size : 10pt;
+	font-weight : normal;
+	-moz-binding: url('chrome://cald2/content/xbl/contentHtmlList.xml#EntryContentLookup');
+
+}
+  TD 	{
+	border-bottom : White;
+	border-left : White;
+	border-right : White;
+	border-top : White;
+	font-weight : bolder;
+	font-size : 10pt;
+}
+
+a {
+	text-decoration : none;
+}
+
+a:hover {
+	text-decoration : none;
+}
+  .part {
+	font-weight:bold;
+	vertical-align : top;
+	text-align : left;
+}
+  .wordlink {
+	font-weight : bold;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	color : Blue;
+}
+
+  .word a {
+	font-weight : bold;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	color : Blue;
+	vertical-align : top;
+	text-align : left;
+}
+
+.word {
+	font-weight : bold;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	color : Blue;
+	vertical-align : top;
+	text-align : left;
+}
+.label {
+	color : Black;
+	font-variant : small-caps;
+	font-weight: normal;
+}
