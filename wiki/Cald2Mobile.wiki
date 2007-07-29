@@ -10,34 +10,43 @@ Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile
 Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必须购买CALD2的光盘以便获得CALD2的词典数据。
 
 
+= 变更日志 =
+
+  == 0.6版 2007/07/29 ==
+  * 现在Cald2Mobile缺省将在当前目录寻找数据文件。
+  * SK_LOG_FILE现在可以配置相对路径。
+  * MYSK_TEMP被删除。现在Cald2Mobile使用GetTempPath函数获得临时目录。
+  * 增加"Save Content Tab Xml"菜单命令，将当前查询的原始XML保存在系统根目录，便于调试。
+  * 一些Bug修正。
+
 = 安装指南 =
 
   # 安装准备
     Cald2Mobile目前支持WM5操作系统，支持QVGA和VGA模式。Cald2Mobile的主要测试是在X51V的VGA模式下进行。Cald2Mobile还需要Unicode IPA字体和CALD2光盘。
   # 安装字体
     CALD2的音标和其他符号使用Unicode编码，因此需要支持IPA的Unicode字体。Cald2Mobile缺省使用Charis SIL字体，在Downloads区可以下载，并拷贝到WM5的/Windows目录下。如果使用其他字体，请修改Cald2Mobile/cald2目录下的entry_VGA.css和entry_QVGA.css文件，将“Charis SIL”替换成你的字体。关于支持IPA的Unicode字体的详细信息，可以访问[http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&item_id=IPAhome IPA Transcription with SIL Fonts]
-  # 准备词典数据
-    Cald2Mobile的词典数据需要270M磁盘空间。在你的PDA机器内存里，或是SD/CF卡上你所喜欢的目录下建立一个data目录。然后将CALD2光盘上data目录下的complete.skn、entry、extraexample、htmlpanel、image、index、pronuk、pronus和wordlist.skn目录拷贝到PDA的data目录下。例如：http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Install_data.jpg
   # 安装Cald2Mobile
-    在[http://code.google.com/p/skmobile/downloads/list 下载区]下载最新的cald2mobile_bin.zip，解压到PDA上你所喜欢的任何地方。
+    在[http://code.google.com/p/skmobile/downloads/list 下载区]下载最新的Cald2Mobile_bin.zip，解压到SD/CF卡上你所喜欢的任何地方。
+  # 准备词典数据
+    Cald2Mobile的词典数据需要270M磁盘空间。在上一步的解压目录下建立一个data目录。然后将CALD2光盘上data目录下的complete.skn、entry、extraexample、htmlpanel、image、index、pronuk、pronus和wordlist.skn目录拷贝到PDA的data目录下。例如：http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Install_data.jpg
+  # 修改配置。
+    自从0.6版起，缺省设置无需修改即可正常工作。
 
 = 配置指南 =
 
 Cald2Mobile目前的配置全部位于sk.ini文件中。
   * PATH
-    设置词典数据的路径。如果词典数据在“\SD\Program Files\Cald2Mobile\data”目录下的话，这里就应该设置“/SD/Program Files/Cald2Mobile”。可以用“;”分割，设置多个目录。
+    缺省为当前目录，用户无需修改。设置词典数据的路径。如果词典数据在“\SD\Program Files\Cald2Mobile\data”目录下的话，这里就应该设置“/SD/Program Files/Cald2Mobile”。可以用“;”分割，设置多个目录。
   * SK_LOG_FILE
-    设置日志文件的路径。
-  * MYSK_TEMP
-    设置临时数据的路径。推荐设置在内存中，例如：/Temp/Cald2Mobile。该目录目前在发音时使用。
+    缺省为当前目录下“sk.log”文件，用户无需修改。设置日志文件的路径。
   * MYSK_WORDLIST_PAGE_SIZE
-    Cald2Mobile的wordlist页中使用分页显示。该设置项设置每页显示的词条数。
+    缺省为15，在VGA模式下InputPannel出现时无需翻页。Cald2Mobile的wordlist页中使用分页显示。该设置项设置每页显示的词条数。
   * MYSK_RESULTS_PAGE_SIZE
-    Cald2Mobile的Results页中使用分页显示。该设置项设置每页显示的词条数。
+    缺省为20，在VGA模式下无需翻页。Cald2Mobile的Results页中使用分页显示。该设置项设置每页显示的词条数。
   * MYSK_QUERY_MODE
-    该设置项设置缺省的查询模式。该设置项使用Bit位表示是否启用该查询模式。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。例如：该值设置为7时，表示HeadWord（标题词）、Phrase（词组）、Sense（意义）被选中。
+    缺省为7。该设置项设置缺省的查询模式。该设置项使用Bit位表示是否启用该查询模式。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。例如：该值设置为7时，表示HeadWord（标题词）、Phrase（词组）、Sense（意义）被选中。
   * MYSK_ZOOM_LEVEL
-    该设置项设置字体放大缩小模式。有效值为0-4，0最小，4最大，2表示不进行缩放。字体的大小也可以通过修改Cald2Mobile/cald2目录下的entry_VGA.css和entry_QVGA.css文件来改变。
+    缺省为2。该设置项设置字体放大缩小模式。有效值为0-4，0最小，4最大，2表示不进行缩放。字体的大小也可以通过修改Cald2Mobile/cald2目录下的entry_VGA.css和entry_QVGA.css文件来改变。
 
 = 使用指南 =
 
@@ -133,6 +142,7 @@ Cald2Mobile的缺点：
     提交Bug时请详细的描述你的操作系统，重现Bug的步骤。如果有必要的话，请提交你的配置文件、日志文件和数据目录的截图。
   # 邮件。
     其它问题你也可以直接发送邮件到 dev.skmobile@gmail.com 和开发人员联系。
+
 
 
 
