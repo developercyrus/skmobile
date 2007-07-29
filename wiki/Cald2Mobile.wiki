@@ -18,6 +18,7 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
   * MYSK_TEMP被删除。现在Cald2Mobile使用GetTempPath函数获得临时目录。
   * 增加"Save Content Tab Xml"菜单命令，将当前查询的原始XML保存在系统根目录，便于调试。
   * 一些Bug修正。
+  * 安装方法更新。现在推荐将数据文件安装在解压目录下，这样缺省配置文件无需修改即可正常工作。
 
 = 安装指南 =
 
