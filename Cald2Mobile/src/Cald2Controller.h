@@ -112,6 +112,12 @@ public :
 	void Load()
 	{
 		m_rootPathA = CW2A(_RootPath, CP_UTF8);
+
+		TCHAR tempPath[1024] = {0};
+		::GetTempPath(sizeof tempPath, tempPath);
+		m_tempPathW = tempPath;
+		m_tempPathW += _T("Cald2Mobile");
+		m_tempPathA = CW2A(m_tempPathW, CP_UTF8);
 		
 		SKEnvir::GetEnvir(&m_envir);
 		SKERR err = m_envir->Init(m_rootPathA);
@@ -121,9 +127,6 @@ public :
 			return;
 		}
 		m_iniPath.Format(_T("%s/sk.ini"), _RootPath);
-
-		m_tempPathA = LoadStringValue("MYSK_TEMP");		 
-		m_tempPathW = CA2W(m_tempPathA, CP_UTF8);
 
 		m_wordListPageSize = LoadIntValue("MYSK_WORDLIST_PAGE_SIZE", 15);
 

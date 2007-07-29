@@ -57,7 +57,7 @@
 				SQLDebugging=""
 				Environment=""
 				EnvironmentMerge="true"
-				DebuggerFlavor=""
+				DebuggerFlavor="4"
 				MPIRunCommand=""
 				MPIRunArguments=""
 				MPIRunWorkingDirectory=""
@@ -71,7 +71,7 @@
 				DeploymentDevice="4118C335-430C-497f-BE48-11C3316B135Ed6518ffb-710f-11d3-99f2-00105a0df099"
 			/>
 			<DebuggerTool
-				RemoteExecutable=""
+				RemoteExecutable="%CSIDL_PROGRAM_FILES%\Cald2Mobile\Cald2MobileD.exe"
 				Arguments=""
 			/>
 		</Configuration>
