@@ -5,13 +5,16 @@
 
 Cald2Mobile是SkMobile的一个应用示例程序。它是CALD2的Windows Mobile 5的移植。
 
-开发Cald2Mobile的目的是希望能够引起大家对SkMobile的注意，能够使用开放源码的SkMobile开发出更多更好的词典。同时由于SkMobile的格式是开放的，因此从SkMobile的格式转换到其他的格式也非常的容易。
+开发Cald2Mobile的目的是希望能够引起大家对SkMobile的注意，能够使用开放源码的SkMobile开发出更多更好的词典。同时由于SkMobile的格式是开放的，因此从SkMobile的格式转换到其他的格式也非常的容易。目前几大著名的Advance Learner英语词典LDOCEv4, CALD2, OALD7和最新的MED2都是利用IDM SK开发的，理论上他们都具备移植到SkMobile上来的条件。但是个人精力有限，无法完成全部的工作。我现在也就是抛砖引玉，希望能够吸引到足够的开发力量把他们都移植过来。
 
 Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必须购买CALD2的光盘以便获得CALD2的词典数据。
 
 
 = 变更日志 =
-
+  == 0.61版 2007/07/31 ==
+  * 增加了许多DEBUG日志。
+  * 配置文件中增加了SK_LOG_DEBUG，当SK_LOG_DEBUG为“1”或“true”或“yes”时输出DEBUG日志。
+  * 当前版本存在已知的页面编码问题，导致数据无法显示。临时解决方案为：打开PIE设置Menu -> Tools -> Options -> General -> Default character set 为 "Unicode (UTF-8)"
   == 0.6版 2007/07/29 ==
   * 现在Cald2Mobile缺省将在当前目录寻找数据文件。
   * SK_LOG_FILE现在可以配置相对路径。
@@ -25,7 +28,7 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
   # 安装准备
     Cald2Mobile目前支持WM5操作系统，支持QVGA和VGA模式。Cald2Mobile的主要测试是在X51V的VGA模式下进行。Cald2Mobile还需要Unicode IPA字体和CALD2光盘。
   # 安装字体
-    CALD2的音标和其他符号使用Unicode编码，因此需要支持IPA的Unicode字体。Cald2Mobile缺省使用Charis SIL字体，在Downloads区可以下载，并拷贝到WM5的/Windows目录下。如果使用其他字体，请修改Cald2Mobile/cald2目录下的entry_VGA.css和entry_QVGA.css文件，将“Charis SIL”替换成你的字体。关于支持IPA的Unicode字体的详细信息，可以访问[http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&item_id=IPAhome IPA Transcription with SIL Fonts]
+    CALD2的音标和其他符号使用Unicode编码，因此需要支持IPA的Unicode字体。Cald2Mobile缺省使用Charis SIL字体，在Downloads区可以下载，并拷贝到WM5的/Windows目录下，然后Soft Reset WM5。如果使用其他字体，请修改Cald2Mobile/cald2目录下的entry_VGA.css和entry_QVGA.css文件，将“Charis SIL”替换成你的字体。关于支持IPA的Unicode字体的详细信息，可以访问[http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&item_id=IPAhome IPA Transcription with SIL Fonts]
   # 安装Cald2Mobile
     在[http://code.google.com/p/skmobile/downloads/list 下载区]下载最新的Cald2Mobile_bin.zip，解压到SD/CF卡上你所喜欢的任何地方。
   # 准备词典数据
@@ -143,6 +146,7 @@ Cald2Mobile的缺点：
     提交Bug时请详细的描述你的操作系统，重现Bug的步骤。如果有必要的话，请提交你的配置文件、日志文件和数据目录的截图。
   # 邮件。
     其它问题你也可以直接发送邮件到 dev.skmobile@gmail.com 和开发人员联系。
+
 
 
 
