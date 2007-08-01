@@ -30,14 +30,19 @@
 #include <nspr/plstr.h>
 #include <nspr/prlock.h>
 
+#include <time.h>
+
 #include "machine.h"
 #include "error.h"
 #include "log.h"
 #include "envir/envir.h"
 
-#define SK_LOG_FILE "SK_LOG_FILE"
+#define SK_LOG_FILE						"SK_LOG_FILE"
+#define SK_LOG_DEBUG_ENVIR_VAR			"SK_LOG_DEBUG"
 
 PRLock* skConsoleLog::m_pLock = NULL;
+char const* skConsoleLog::m_logFile = NULL;
+PRBool skConsoleLog::m_isEnableDebug= PR_FALSE;
 
 void skConsoleLog::Init()
 {
@@ -46,11 +51,10 @@ void skConsoleLog::Init()
     m_pLock = PR_NewLock();
 
 	// remove exist logfile
-	char const* pcFile = getLogFile();
-	if(pcFile)
+	m_logFile = getLogFile();
+	if(m_logFile)
 	{
-		PR_Delete(pcFile);
-		PL_strfree((void*)pcFile);
+		PR_Delete(m_logFile);
 	}
 }
 
@@ -64,13 +68,13 @@ void skConsoleLog::Log(const char* pszFormat, ...)
     va_end(argp);
 }
 
-void skConsoleLog::DebugLog(const char* pszFormat, ...)
+void skConsoleLog::DebugLog(const char* file, size_t line, const char* pszFormat, ...)
 {
     char* msg;
     va_list argp;
     va_start(argp, pszFormat);
     
-    msg = PR_smprintf("[skdebug] %s", pszFormat);
+	msg = PR_smprintf("[skdebug] [%s:%d] - %s", file, line, pszFormat);
 
     vLog(msg, argp);
 
@@ -88,21 +92,17 @@ void skConsoleLog::vLog(const char *pszFormat, va_list ap)
     str255Log[0] = PL_strlen( (const char*)(str255Log + 1) );
     DebugStr( str255Log );
 #else
-    PR_vfprintf(stderr, pszFormat, ap);
-    PR_fprintf(stderr, "\n");
     if(!m_pLock)
         return;
     PR_Lock(m_pLock);
-	const char* pcFile = getLogFile();
-	if(pcFile)
+	if(m_logFile)
     {
-        FILE * f = fopen(pcFile, "a");
+        FILE * f = fopen(m_logFile, "a");
         if(f)
 		{
             vfprintf(f, pszFormat, ap);
 		}
         fclose(f);
-		PL_strfree((void*)pcFile);
     }
     PR_Unlock(m_pLock);
 #endif
@@ -118,18 +118,22 @@ void skConsoleLog::Log(const wchar_t* pszFormat, ...)
 	va_end(argp);
 }
 
-void skConsoleLog::DebugLog(const wchar_t* pszFormat, ...)
+void skConsoleLog::DebugLog(const char* file, size_t line, const wchar_t* pszFormat, ...)
 {
 	char* msg;
 	va_list argp;
-	va_start(argp, pszFormat);
 
-	msg = PR_smprintf("[skdebug] %s", pszFormat);
+	if(m_isEnableDebug)
+	{
+		va_start(argp, pszFormat);
 
-	vLog(msg, argp);
+		msg = PR_smprintf("[skdebug] [%s:%d] - %s", file, line, pszFormat);
 
-	PR_smprintf_free(msg);
-	va_end(argp);
+		vLog(msg, argp);
+
+		PR_smprintf_free(msg);
+		va_end(argp);
+	}
 }
 
 void skConsoleLog::vLog(const wchar_t *pszFormat, va_list ap)
@@ -142,22 +146,18 @@ void skConsoleLog::vLog(const wchar_t *pszFormat, va_list ap)
 	str255Log[0] = PL_strlen( (const char*)(str255Log + 1) );
 	DebugStr( str255Log );
 #else
-	vfwprintf(stderr, pszFormat, ap);
-	PR_fprintf(stderr, "\n");
 	if(!m_pLock)
 		return;
 	PR_Lock(m_pLock);
 
-	const char* pcFile = getLogFile();
-	if(pcFile)
+	if(m_logFile)
 	{
-		FILE * f = fopen(pcFile, "a");
+		FILE * f = fopen(m_logFile, "a");
 		if(f)
 		{			
 			vfwprintf(f, pszFormat, ap);
 		}
 		fclose(f);
-		PL_strfree((void*)pcFile);
 	}
 	PR_Unlock(m_pLock);
 #endif
@@ -221,5 +221,85 @@ const char * skConsoleLog::getLogFile()
 	{
 		pcFile = PL_strdup(pcFile);
 	}
+
+	// get enable debug flag
+	char* enableDebugString = NULL;
+	err = pEnvir->GetValue(SK_LOG_DEBUG_ENVIR_VAR, &enableDebugString);
+	if(err != noErr)
+		return NULL;
+
+	if(NULL != enableDebugString && (
+		0 == PL_strcmp("1", enableDebugString) || 
+		0 == PL_strcasecmp("true", enableDebugString) ||
+		0 == PL_strcasecmp("yes", enableDebugString) ))
+	{
+		m_isEnableDebug = PR_TRUE;
+	}
+	else
+	{
+		m_isEnableDebug = PR_FALSE;
+	}
+	
 	return pcFile;
 }
+
+void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const char * pszFormat, ...)
+{
+/*
+	time_t timer = time(NULL);
+	struct tm* localtimer = localtime(&timer);
+	char timeString[64] = {0};
+	sprintf(timeString, "%d-%d %d:%d:%d", 
+		(localtimer->tm_mon + 1),
+		localtimer->tm_mday,
+		localtimer->tm_hour,
+		localtimer->tm_min,
+		localtimer->tm_sec);
+*/	
+	if(isDebug)
+	{
+		if(m_isEnableDebug)
+		{
+			// Log("\n[%s] [DEBUG] [%s:%d] - ", timeString, file, line);
+			Log("\n[DEBUG] [%s:%d] - ", file, line);
+			va_list argp;
+			va_start(argp, pszFormat);
+			vLog(pszFormat, argp);
+			va_end(argp);
+		}
+	}
+	else
+	{
+		Log("\n[INFO]  [%s:%d] - ", file, line);
+		va_list argp;
+		va_start(argp, pszFormat);
+		vLog(pszFormat, argp);
+		va_end(argp);
+	}
+}
+
+void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const wchar_t * pszFormat, ...)
+{
+	if(isDebug)
+	{
+		if(m_isEnableDebug)
+		{
+			Log("\n[DEBUG] [%s:%d] - ", file, line);
+			va_list argp;
+			va_start(argp, pszFormat);
+			vLog(pszFormat, argp);
+			va_end(argp);
+		}
+	}
+	else
+	{
+		Log("\n[INFO]  [%s:%d] - ", file, line);
+		va_list argp;
+		va_start(argp, pszFormat);
+
+		vLog(pszFormat, argp);
+
+		va_end(argp);
+	}
+}
+

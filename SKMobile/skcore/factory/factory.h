@@ -32,7 +32,6 @@
 
 #define SK_COM_PATH_ENVIR_VAR           "SK_COM_PATH"
 #define SK_COM_PATH_APPEND_ENVIR_VAR    "SK_COM_PATH_APPEND"
-#define SK_DEBUG_MODULE_ENVIR_VAR       "SK_DEBUG_MODULE"
 
 #ifdef SK_MACOSX
 // moved from mac/sysresource.h

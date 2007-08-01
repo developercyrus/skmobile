@@ -113,6 +113,7 @@
 			OutputDirectory="$(SolutionDir)/dist/$(PlatformName)\$(ProjectName)"
 			IntermediateDirectory="$(SolutionDir)/obj/$(PlatformName)\$(ConfigurationName)\$(ProjectName)"
 			ConfigurationType="1"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>

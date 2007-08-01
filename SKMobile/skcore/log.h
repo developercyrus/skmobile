@@ -29,6 +29,12 @@
 #ifndef __SKC_LOG_H_
 #define __SKC_LOG_H_
 
+#define SK_TRACE  skConsoleLog::trace
+
+#define SK_LOG_INFO  PR_FALSE, __FILE__, __LINE__
+
+#define SK_LOG_DEBUG  PR_TRUE, __FILE__, __LINE__
+
 class SKAPI skConsoleLog
 {
 public:
@@ -36,11 +42,14 @@ public:
 
     static void Log(const char* pszFormat, ...);
     static void vLog(const char *pszFormat, va_list ap);
-    static void DebugLog(const char* pszFormat, ...);
+    static void DebugLog(const char* file, size_t line, const char* pszFormat, ...);
 
 	static void Log(const wchar_t * pszFormat, ...);
 	static void vLog(const wchar_t *pszFormat, va_list ap);
-	static void DebugLog(const wchar_t * pszFormat, ...);
+	static void DebugLog(const char* file, size_t line, const wchar_t * pszFormat, ...);
+
+	static void trace(PRBool isDebug, const char* file, size_t line, const char * pszFormat, ...);
+	static void trace(PRBool isDebug, const char* file, size_t line, const wchar_t * pszFormat, ...);
 
 private:
 
@@ -51,6 +60,10 @@ private:
 	static const char * getLogFile();
 
     static PRLock*  m_pLock;
+
+	static char const*	m_logFile;
+
+	static PRBool	m_isEnableDebug;
 };
 
 #endif // __SKC_LOG_H_
