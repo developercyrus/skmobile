@@ -123,7 +123,7 @@ public :
 		SKERR err = m_envir->Init(m_rootPathA);
 		if(err != noErr)
 		{
-			skConsoleLog::Log(_T("Failed to inital SKEnvir. error=%d"), err);
+			SK_TRACE(SK_LOG_INFO, _T("Failed to inital SKEnvir. error=%d"), err);
 			return;
 		}
 		m_iniPath.Format(_T("%s/sk.ini"), _RootPath);
@@ -276,7 +276,10 @@ public :
 
 
 	Cald2Controller() : m_isFrist(TRUE), m_currentWordListBegin(0), m_wordListCount(0), m_currentResultsBegin(0)
-	{}
+	{		
+		m_setting.Load();
+		DictionaryService::init(m_setting.GetRootPathCString());
+	}
 
 
 
@@ -289,15 +292,17 @@ public :
 
 	virtual void Init(CSKMobileView * view) 
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Init");
+
 		Base::Init(view);
 
-		m_setting.Load();
-		
 		m_view->m_wndHtmlViewer.ZoomLevel(m_setting.GetZoomLevel());
 		
 		CAtlString contentHtmlPath;
 		int dpi = ::GetDeviceCaps(m_view->GetDC(), LOGPIXELSX) ;
 		this->m_isVGA = dpi == 96;
+		SK_TRACE(SK_LOG_DEBUG, _T("m_isVGA = %d"), this->m_isVGA);
+
 		if(this->m_isVGA)
 		{
 			contentHtmlPath.Format(_T("file://%s/cald2/cald2_VGA.html"), _RootPath);
@@ -306,6 +311,8 @@ public :
 		{
 			contentHtmlPath.Format(_T("file://%s/cald2/cald2_QVGA.html"), _RootPath);
 		}
+		
+		SK_TRACE(SK_LOG_DEBUG, _T("Navigate to %s"), contentHtmlPath);
 		view->m_wndHtmlViewer.Navigate(contentHtmlPath);
 	}
 
@@ -313,6 +320,8 @@ public :
 
 	virtual void Fini()
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Fini");
+
 		m_setting.SetQueryMode(Base::m_queryMode);
 		m_setting.Save();
 	}
@@ -321,7 +330,11 @@ public :
 
 	virtual LRESULT OnSaveContentXml(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnSaveContentXml");
+
 		CAtlString currentUrlPath = m_contentHistory.GetCurrent();
+		SK_TRACE(SK_LOG_DEBUG, _T("currentUrlPath = %s"), currentUrlPath);
+
 		if(currentUrlPath.IsEmpty())
 		{
 			CAtlString msg;
@@ -333,6 +346,8 @@ public :
 		BOOL rc = loadContentData(currentUrlPath, result);
 		if(rc)
 		{
+			SK_TRACE(SK_LOG_DEBUG, _T("content = %s"), result.content);
+
 			std::string utf8 = CW2A(result.content, CP_UTF8);
 			FILE * savedFile = _wfopen(_T("content.xml"), _T("w"));
 			fwrite(utf8.c_str(), sizeof (char), utf8.size(), savedFile);
@@ -345,15 +360,18 @@ public :
 
 	virtual LRESULT OnDocumentComplete(int idCtrl, LPNMHDR pnmh, BOOL& bHandled)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnDocumentComplete");
+
 		Base::OnDocumentComplete(idCtrl, pnmh, bHandled);
 
 		if(m_isFrist)
 		{
 			m_isFrist = FALSE;
+			SK_TRACE(SK_LOG_DEBUG, "m_isFrist = FALSE");
+
 			try
 			{
 				// first
-				DictionaryService::init(m_setting.GetRootPathCString());
 				DictionaryService::wordListService = new SKWordListService("native:data/wordlist.skn");
 				DictionaryService::queryService = new SKIndexQueryService(
 					"data/index/complete.skn/index.cfi", 
@@ -381,16 +399,19 @@ public :
 				// initial XSL
 				CAtlString xslPath;
 				xslPath.Format(_T("%s/cald2/cald2.xsl"), _RootPath);
+				SK_TRACE(SK_LOG_DEBUG, _T("xslPath = %s"), xslPath);
+
 				CAtlString xslContent = loadFile(xslPath);
 				Base::setStyleSheet(xslContent);
 
 				// load word list
 				m_wordListCount = DictionaryService::wordListService->getWordListCount();
+				SK_TRACE(SK_LOG_DEBUG, _T("m_wordListCount = %d"), m_wordListCount);
 				setWordListPage(0);
 			}
 			catch (truntime_error& e)
 			{
-				skConsoleLog::Log(_T("Failed to inital Cald2DictionaryController. error=%s"), 
+				SK_TRACE(SK_LOG_INFO, _T("Failed to inital Cald2DictionaryController. error=%s"), 
 					e.errorMsg().c_str());
 			}
 		}
@@ -402,6 +423,8 @@ public :
 
 	virtual BOOL OnReturnKey(UINT nRepCnt, UINT nFlags)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnReturnKey");
+
 		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
@@ -409,6 +432,7 @@ public :
 			if(title == TAB_NAME_WORDLIST || title == TAB_NAME_RESULTS)
 			{
 				// maybe click a link
+				SK_TRACE(SK_LOG_DEBUG, "maybe click a link");
 				return FALSE;
 			}
 		}
@@ -421,12 +445,15 @@ public :
 
 	virtual BOOL OnUpKey(UINT nRepCnt, UINT nFlags)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnUpKey");
+
 		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
 			if(title == TAB_NAME_CONTENT)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
 				Base::htmlPageUp();
 				return TRUE;
 			}
@@ -438,12 +465,15 @@ public :
 
 	virtual BOOL OnDownKey(UINT nRepCnt, UINT nFlags)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnDownKey");
+
 		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
 			if(title == TAB_NAME_CONTENT)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
 				Base::htmlPageDown();
 				return TRUE;
 			}
@@ -455,9 +485,13 @@ public :
 
 	virtual BOOL OnLeftKey(UINT nRepCnt, UINT nFlags)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnLeftKey");
+
 		HWND focusHwnd = ::GetFocus();
 		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
 		{
+			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
+
 			// skip to m_wndContentTabView and generate Up event
 			m_view->m_wndContentTabView.SetFocus();
 			return TRUE;
@@ -468,18 +502,24 @@ public :
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
 			if(title == TAB_NAME_WORDLIST)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
+
 				// word list page view				
 				this->setWordListPage(m_currentWordListBegin - m_setting.GetWordListPageSize());
 				return TRUE;
 			}
 			else if(title == TAB_NAME_RESULTS)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
+
 				// result page view
 				this->setResultPage(m_currentResultsBegin - m_setting.GetResultsPageSize());
 				return TRUE;
 			}
 			else if(title == TAB_NAME_CONTENT)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
+
 				// navigate in history
 				CAtlString prevUrlPath = m_contentHistory.GetPrev();
 				if(!prevUrlPath.IsEmpty())
@@ -490,6 +530,7 @@ public :
 			}
 			else
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
 				// goto prev tab
 				Base::prevTab();
 				return TRUE;
@@ -502,9 +543,13 @@ public :
 
 	virtual BOOL OnRightKey(UINT nRepCnt, UINT nFlags)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnRightKey");
+
 		HWND focusHwnd = ::GetFocus();
 		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
 		{
+			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
+
 			// skip to m_wndContentTabView and generate Down event
 			m_view->m_wndContentTabView.SetFocus();
 			return TRUE;
@@ -515,18 +560,24 @@ public :
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
 			if(title == TAB_NAME_WORDLIST)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
+
 				// word list page view
 				this->setWordListPage(m_currentWordListBegin + m_setting.GetWordListPageSize());
 				return TRUE;
 			}
 			else if(title == TAB_NAME_RESULTS)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
+
 				// result page view
 				this->setResultPage(m_currentResultsBegin + m_setting.GetResultsPageSize());
 				return TRUE;
 			}
 			else if(title == TAB_NAME_CONTENT)
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
+
 				// navigate in history
 				CAtlString nextUrlPath = m_contentHistory.GetNext();
 				if(!nextUrlPath.IsEmpty())
@@ -537,6 +588,8 @@ public :
 			}
 			else
 			{
+				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
+
 				// goto next tab
 				Base::nextTab();
 				return TRUE;
@@ -558,6 +611,8 @@ protected :
 
 	virtual void handleLookup(CAtlString const& queryString, UINT queryModes)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleLookup(%s, %d)"), queryString, queryModes);
+
 		try
 		{
 			PRUint8 types = 0;
@@ -580,9 +635,12 @@ protected :
 
 			Base::setTabTextContent(TAB_NAME_RESULTS, message);
 
+			SK_TRACE(SK_LOG_DEBUG, _T("queryString = %s, bUseFlex = true, types = %d, bUseDeflect = %d)"), 
+				queryString, types, bUseDeflect);
 			getQueryService()->query((TCHAR const*)queryString, true, types, bUseDeflect);
 
 			UINT count = getQueryService()->getResultCount();
+			SK_TRACE(SK_LOG_DEBUG, _T("ResultCount = %d"), count);
 			if(0 < count)
 			{
 				setResultPage(0);
@@ -597,7 +655,7 @@ protected :
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to look up. queryString_=%s, error=%s"), 
+			SK_TRACE(SK_LOG_INFO, _T("Failed to look up. queryString_=%s, error=%s"), 
 				(TCHAR const*)queryString, e.errorMsg().c_str());
 		}
 		return;
@@ -607,6 +665,8 @@ protected :
 
 	virtual void handleCommand(CAtlString const& command, CSimpleArray<CAtlString> const& params)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleCommand(%s)"), command);
+
 		if(command == _T("setContentTab"))
 		{
 			// only one parameter 'path'
@@ -645,6 +705,8 @@ protected :
 
 	virtual void updateWordList(CAtlString const& queryString)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::updateWordList(%s)"), queryString);
+
 		try
 		{
 			// get sort key
@@ -655,8 +717,12 @@ protected :
 
 			CComBSTR sortKey(result.bstrVal);
 			CAtlString sortKeyString = sortKey;
+			SK_TRACE(SK_LOG_DEBUG, _T("sortKeyString = %s"), sortKeyString);
+
 			std::string utf8(CW2A(sortKeyString, CP_UTF8));
 			UINT pos = getWordListService()->findWordListPosition(utf8);
+			SK_TRACE(SK_LOG_DEBUG, _T("WordListPosition = %d"), pos);
+
 			if(pos > 0 && pos < getWordListService()->getWordListCount())
 			{
 				UINT begin = pos - pos % m_setting.GetWordListPageSize();
@@ -669,7 +735,7 @@ protected :
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to update word list. queryString=%s, error=%s"), 
+			SK_TRACE(SK_LOG_INFO, _T("Failed to update word list. queryString=%s, error=%s"), 
 				queryString, e.errorMsg().c_str());
 		}
 	}
@@ -678,15 +744,17 @@ protected :
 
 	virtual CAtlString formatContentHtml(CAtlString const& contentInnerHTML)
 	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::formatContentHtml");
+
 		CAtlString result;
 		result.Append(_T("<?xml version='1.0' encoding='utf-8'>\r\n"));
 		result.Append(_T("<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>"));
 		result.Append(_T("<html xmlns='http://www.w3.org/1999/xhtml'>"));
 		result.Append(_T("<head>"));
 		if(this->m_isVGA)
-			result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/entry_96.css'/>"), _RootPath);
+			result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/entry_VGA.css'/>"), _RootPath);
 		else
-			result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/entry_192.css'/>"), _RootPath);
+			result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/entry_QVGA.css'/>"), _RootPath);
 		result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/cle.css'/>"), _RootPath);
 		result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/colpanel.css'/>"), _RootPath);
 		result.AppendFormat(_T("<link rel='stylesheet' type='text/css' href='%s/cald2/vforms.css'/>"), _RootPath);
@@ -704,25 +772,29 @@ protected :
 
 	BOOL handleSetContentTab(CAtlString const& urlPath)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleSetContentTab(%s)"), urlPath);
+
 		try
 		{
 			ContentData result;
 			BOOL rc = loadContentData(urlPath, result);
-			if(rc)
+			if(!rc)
 			{
-				if(result.isXml)
-					Base::setTabXmlContent(TAB_NAME_CONTENT, result.content);
-				else
-					Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
-				if(!result.archor.IsEmpty() && _T("0") != result.archor)
-					Base::htmlAnchor(result.archor);
-				return TRUE;
+				SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
+				return FALSE;
 			}
-			return FALSE;
+
+			if(result.isXml)
+				Base::setTabXmlContent(TAB_NAME_CONTENT, result.content);
+			else
+				Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
+			if(!result.archor.IsEmpty() && _T("0") != result.archor)
+				Base::htmlAnchor(result.archor);
+			return TRUE;
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to load content. urlPath = %s, cause = %s"),
+			SK_TRACE(SK_LOG_INFO, _T("Failed to load content. urlPath = %s, cause = %s"),
 				urlPath, e.errorMsg().c_str());
 			return FALSE;
 		}
@@ -732,6 +804,8 @@ protected :
 
 	void handlePlaySound(CAtlString const& urlPath)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handlePlaySound(%s)"), urlPath);
+
 		try
 		{
 			int pos = urlPath.Find(_T(':'));
@@ -745,7 +819,7 @@ protected :
 				if(prefix != _T("://fs/2.0/"))
 				{
 					// unsupported SK protocal
-					skConsoleLog::Log(_T("unsupported SK protocal. urlPath = %s"), urlPath);
+					SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
 					return;
 				}
 
@@ -767,6 +841,8 @@ protected :
 				utf8SoundFilePath.append(m_setting.GetTempPathCString()).append("/").append(dir).append("/").append(path);
 				soundFilePath = CA2W(utf8SoundFilePath.c_str(), CP_UTF8);
 
+				SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, utf8SoundFilePath = %s", 
+					filesystem.c_str(), path.c_str(), utf8SoundFilePath.c_str());
 				getFileSystemService()->copyFile(filesystem, path, utf8SoundFilePath);
 			} else if(protocal == _T("file"))
 			{
@@ -775,15 +851,16 @@ protected :
 			} else
 			{
 				// unsupported protocal
-				skConsoleLog::Log(_T("unsupported protocal. urlPath = %s"), urlPath);
+				SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
 				return;
 			}
 
+			SK_TRACE(SK_LOG_DEBUG, _T("soundFilePath = %s"), soundFilePath);
 			Base::playSound(soundFilePath);
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to play sound. urlPath = %s, cause = %s"),
+			SK_TRACE(SK_LOG_INFO, _T("Failed to play sound. urlPath = %s, cause = %s"),
 				urlPath, e.errorMsg().c_str());
 		}	
 	}
@@ -792,13 +869,15 @@ protected :
 
 	void handlePlaySoundEnded(CAtlString const& urlPath)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handlePlaySoundEnded(%s)"), urlPath);
+
 		try
 		{
 			PR_Delete(CW2A(urlPath, CP_UTF8));
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log("Failed to delete temp sound file. soundFilePath = %s, cause = %s",
+			SK_TRACE(SK_LOG_INFO, "Failed to delete temp sound file. soundFilePath = %s, cause = %s",
 				urlPath, e.errorMsg().c_str());
 		}	
 	}
@@ -806,84 +885,29 @@ protected :
 
 	void handleNewTab(CAtlString const& tabName, CAtlString const& urlPath)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleNewTab(%s, %s)"), tabName, urlPath);
+
 		try
 		{
-			int pos = urlPath.Find(_T(':'));
-			CAtlString protocal = urlPath.Mid(0, pos);
-
-			WTL::CString content;
-			if(protocal == _T("sk"))
+			ContentData result;
+			BOOL rc = loadContentData(urlPath, result);
+			if(!rc)
 			{
-				// skip '://fs/2.0/'
-				CAtlString prefix = urlPath.Mid(pos, 10);
-				if(prefix != _T("://fs/2.0/"))
-				{
-					// unsupported SK protocal
-					skConsoleLog::Log(_T("unsupported SK protocal. urlPath = %s"), urlPath);
-					return;
-				}
-
-				CAtlString fullPath = urlPath.Mid(pos + 10);
-
-				// extract it
-				char utf8Path[2048] = {0};
-				int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
-				string utf8FullPath(utf8Path, len);
-				pos = utf8FullPath.find('!');
-				string filesystem = utf8FullPath.substr(0, pos);
-				// skip '!/'
-				string path = utf8FullPath.substr(pos + 2);
-
-				std::string contentData;
-				getFileSystemService()->getTextFileData(filesystem, path, contentData);
-
-				// fix CSS location. replace "chrome://cald2/skin/" to "cald2/"
-				// string orig("chrome://cald2/skin/");
-				// string cssDir((LPCSTR)rootPathA_);
-				// cssDir.append("/").append("cald2/");
-				// pos = contentData.find(orig, 0);
-				// while(string::npos != pos)
-				// {
-				// 	contentData.replace(pos, orig.size(), cssDir);
-				// 	pos = contentData.find(orig, pos);
-				// }
-
-				content = CA2W(contentData.c_str(), CP_UTF8);
-			} else if(protocal == _T("file"))
-			{
-				// skip '://'
-				CAtlString fullPath = urlPath.Mid(pos + 3);
-
-				CAtlFile file;
-				HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
-				if(S_OK != rc)
-				{
-					skConsoleLog::Log(_T("File isn't existance. urlPath = %s"), urlPath);
-					return;
-				}
-				ULONGLONG size = 0;
-				file.GetSize(size);
-				LPTSTR buffer = content.GetBufferSetLength((int)(size + 1));
-				file.Read(buffer, (int)size);
-			} else
-			{
-				// unsupported protocal
-				skConsoleLog::Log(_T("unsupported protocal. urlPath = %s"), urlPath);
-				return;
-			}
-
-			if(content.IsEmpty())
-			{
-				skConsoleLog::Log(_T("Failed to load file data. urlPath = %s"), urlPath);
+				SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
 				return;
 			}
 
 			Base::addTab(tabName);
-			Base::setTabHtmlContent(tabName, (LPCTSTR)content);
+			if(result.isXml)
+				Base::setTabXmlContent(tabName, result.content);
+			else
+				Base::setTabHtmlContent(tabName, result.content);
+			if(!result.archor.IsEmpty() && _T("0") != result.archor)
+				Base::htmlAnchor(result.archor);
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to new tab. tabName=  %s, urlPath = %s, cause = %s"),
+			SK_TRACE(SK_LOG_INFO, _T("Failed to new tab. tabName=  %s, urlPath = %s, cause = %s"),
 				tabName, urlPath, e.errorMsg().c_str());
 		}
 	}
@@ -892,6 +916,8 @@ protected :
 
 	void handleClickWordList(CAtlString const& label)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleClickWordList(%s)"), label);
+
 		this->doLookup(label);
 	}
 
@@ -899,6 +925,8 @@ protected :
 
 	void setResultPage(UINT begin)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::setResultPage(%d)"), begin);
+
 		UINT count = getQueryService()->getResultCount();
 		try
 		{
@@ -945,19 +973,23 @@ protected :
 
 			if(0 == begin && 1 == offset)
 			{
+				SK_TRACE(SK_LOG_DEBUG, _T("only one result, directly display content"));
+
 				// only one result, directly display content
 				ResultItem item = getQueryService()->getResultItem(0);
+				SK_TRACE(SK_LOG_DEBUG, "item.entryId = %d, item.type = %d, item.contextId = %s, item.clid = %d, item.label = %s", 
+					item.entryId, item.type, item.contextId.c_str(), item.clid, item.label.c_str());
 
 				CAtlString urlPath;
 				urlPath.AppendFormat(_T("sk://fs/2.0/data/entry/filesystem.cff!/@%d"), item.entryId);
 				if(item.contextId != "0" )
-					urlPath.AppendFormat(_T("#%s"), item.contextId);
+					urlPath.AppendFormat(_T("#%s"), CA2W(item.contextId.c_str(), CP_UTF8));
 				this->handleSetContentTab(urlPath);
 			}
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to set result page. queryString_=%s, begin = %d, count = %d, error=%s"), 
+			SK_TRACE(SK_LOG_INFO, _T("Failed to set result page. queryString_=%s, begin = %d, count = %d, error=%s"), 
 				(TCHAR const*)Base::m_queryString, begin, count, e.errorMsg().c_str());
 		}
 		return;
@@ -967,6 +999,8 @@ protected :
 
 	void setWordListPage(UINT begin)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::setWordListPage(%d)"), begin);
+
 		try
 		{
 			if(begin >= m_wordListCount || begin < 0)
@@ -1003,7 +1037,7 @@ protected :
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to init word list. error=%s"), e.errorMsg().c_str());
+			SK_TRACE(SK_LOG_INFO, _T("Failed to init word list. error=%s"), e.errorMsg().c_str());
 		}
 		return;
 	}
@@ -1012,6 +1046,8 @@ protected :
 
 	BOOL loadContentData(CAtlString const& urlPath, ContentData & result)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::loadContentData(%s)"), urlPath);
+
 		try
 		{
 			int pos = urlPath.Find(_T(':'));
@@ -1024,7 +1060,7 @@ protected :
 				if(prefix != _T("://fs/2.0/"))
 				{
 					// unsupported SK protocal
-					skConsoleLog::Log(_T("unsupported SK protocal. urlPath = %s"), urlPath);
+					SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
 					return FALSE;
 				}
 
@@ -1042,6 +1078,8 @@ protected :
 				// skip '#'
 				string utf8Archor = utf8FullPath.substr(archorSplit + 1);
 				result.archor = CA2W(utf8Archor.c_str(), CP_UTF8);
+				SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, archor = %s", 
+					filesystem.c_str(), path.c_str(), utf8Archor.c_str());
 
 				std::string contentData;
 				getFileSystemService()->getTextFileData(filesystem, path, contentData);
@@ -1077,12 +1115,13 @@ protected :
 			{
 				// skip '://'
 				CAtlString fullPath = urlPath.Mid(pos + 3);
+				SK_TRACE(SK_LOG_DEBUG, _T("fullPath = %s"), fullPath);
 
 				CAtlFile file;
 				HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
 				if(S_OK != rc)
 				{
-					skConsoleLog::Log(_T("File isn't existance. urlPath = %s"), urlPath);
+					SK_TRACE(SK_LOG_INFO, _T("File isn't existance. urlPath = %s"), urlPath);
 					return FALSE;
 				}
 				ULONGLONG size = 0;
@@ -1092,20 +1131,22 @@ protected :
 			} else
 			{
 				// unsupported protocal
-				skConsoleLog::Log(_T("unsupported protocal. urlPath = %s"), urlPath);
+				SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
 				return FALSE;
 			}
 
 			if(result.content.IsEmpty())
 			{
-				skConsoleLog::Log(_T("Failed to load file data. urlPath = %s"), urlPath);
+				SK_TRACE(SK_LOG_INFO, _T("Failed to load file data. urlPath = %s"), urlPath);
 				return FALSE;
 			}
+
+			SK_TRACE(SK_LOG_DEBUG, _T("result.isXml = %d, result.archor = %s, result.content : \n%s"), result.isXml, result.archor, result.content);
 			return TRUE;
 		}
 		catch (truntime_error& e)
 		{
-			skConsoleLog::Log(_T("Failed to load content. urlPath = %s, cause = %s"),
+			SK_TRACE(SK_LOG_INFO, _T("Failed to load content. urlPath = %s, cause = %s"),
 				urlPath, e.errorMsg().c_str());
 			return FALSE;
 		}
@@ -1138,6 +1179,8 @@ protected :
 
 	static CAtlString loadFile(CAtlString const& path)
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::loadFile(%s)"), path);
+
 		std::string content;
 
 		FILE *stream;

@@ -16,22 +16,23 @@
 
 #include "resource.h"
 
+#include <fstream>
+#include <iomanip>
+#include "unicode.h"
+#include <atlfile.h>
+using namespace std;
+using namespace mysk;
+
+#include "DictionaryService.h"
 #include "Script.h"
 #include "Controller.h"
-#include "DictionaryService.h"
 
 #include "PickButton.h"
 #include "Cald2MobileView.h"
 #include "aboutdlg.h"
 #include "MainFrm.h"
 
-#include "unicode.h"
 // #include "ComAdapter.h"
-#include <fstream>
-#include <iomanip>
-#include <atlfile.h>
-using namespace std;
-using namespace mysk;
 #include "BasicController.h"
 #include "Cald2Controller.h"
 
@@ -51,7 +52,7 @@ void ControllerFactory::listAvailableControllerNames(char const* names[], unsign
 
 Controller * ControllerFactory::create(char const* name)
 {
-	return new Cald2Controller;
+	return new Cald2Controller();
 }
 
 
@@ -90,7 +91,16 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	int nRet = CMainFrame::AppRun(lpstrCmdLine, nCmdShow);
+	int nRet = 0;
+	try
+	{
+		nRet = CMainFrame::AppRun(lpstrCmdLine, nCmdShow);
+	}
+	catch (truntime_error& e)
+	{
+		SK_TRACE(SK_LOG_INFO, _T("Catch an exception. error=%s"), 
+			e.errorMsg().c_str());
+	}
 
 	_Module.Term();
 	::CoUninitialize();

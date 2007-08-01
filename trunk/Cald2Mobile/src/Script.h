@@ -30,13 +30,22 @@ public :
 
 	HRESULT Run(wchar_t const* procedureName, CComVariant * result, size_t argc, wchar_t const* args[])
 	{
+		SK_TRACE(SK_LOG_DEBUG, _T("CScript::Run(procedureName = %s)"), procedureName);
+
 		CComSafeArray<VARIANT> comParams;
 		for(size_t i = 0; i < argc; i++)
 		{
+			SK_TRACE(SK_LOG_DEBUG, _T("param[%d] = %s"), i, args[i]);
 			CComVariant param(args[i]);
 			comParams.Add(param);
 		}
-		return Run(CComBSTR(procedureName), comParams, result);
+
+		HRESULT rc = Run(CComBSTR(procedureName), comParams, result);
+		if(FAILED(rc))
+		{
+			THROW_RUNTIME_EXCEPTION(_T("Failed to run '") << procedureName << _T(" (") << args << _T(")'"));
+		}
+		return rc;
 	}
 
 	HRESULT Eval(CComBSTR const& expression, CComVariant * result)

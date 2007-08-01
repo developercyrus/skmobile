@@ -7,9 +7,6 @@ public :
 
 	typedef CWindowImpl< CPickButton > base;
 
-	const static int WIDTH	= 16;
-	const static int HEIGHT = 16;
-
 	const static int ID_TIMER		= 1000;
 	const static int TIMER_INTERVAL = 250;
 
@@ -19,6 +16,7 @@ public :
 	CPoint		m_cPointBtnPos;
 	HWND		m_hMouseDownActiveWindow;
 	HWND		m_hMouseDownActiveWindowRecent;
+	int		m_iconLength;
 
 	CPickButton()
 	{
@@ -34,19 +32,32 @@ public :
 
 	void MyCreate()
 	{
-		HICON icon = AtlLoadIconImage(IDI_PICK_BUTTON, LR_DEFAULTCOLOR, 16, 16);
-		BOOL rc = m_ImageList.Create(WIDTH, HEIGHT, ILC_COLOR, 1, 0);
-		m_ImageList.AddIcon(icon);
 		CWindow wndTaskBar = findTaskBar();
 		if(NULL != wndTaskBar)
 		{
 			CRect taskBarRect;
 			wndTaskBar.GetWindowRect(&taskBarRect);
+			if(taskBarRect.Height() > 32)
+			{
+				// load big icon
+				m_iconLength = 32;
+				HICON icon = AtlLoadIconImage(IDR_MAINFRAME, LR_DEFAULTCOLOR, m_iconLength, m_iconLength);
+				BOOL rc = m_ImageList.Create(m_iconLength, m_iconLength, ILC_COLOR, 1, 0);
+				m_ImageList.AddIcon(icon);
+			}
+			else
+			{
+				// load small icon
+				m_iconLength = 16;
+				HICON icon = AtlLoadIconImage(IDI_PICK_BUTTON, LR_DEFAULTCOLOR, m_iconLength, m_iconLength);
+				BOOL rc = m_ImageList.Create(m_iconLength, m_iconLength, ILC_COLOR, 1, 0);
+				m_ImageList.AddIcon(icon);
+			}
 			CRect rect(
-				taskBarRect.CenterPoint().x - WIDTH / 2, 
-				taskBarRect.CenterPoint().y - HEIGHT / 2, 
-				taskBarRect.CenterPoint().x + WIDTH / 2, 
-				taskBarRect.CenterPoint().y + HEIGHT / 2 );
+				taskBarRect.CenterPoint().x - m_iconLength / 2, 
+				taskBarRect.CenterPoint().y - m_iconLength / 2, 
+				taskBarRect.CenterPoint().x + m_iconLength / 2, 
+				taskBarRect.CenterPoint().y + m_iconLength / 2 );
 			this->Create(wndTaskBar, rect, _T("PickWord1"), WS_CHILD|WS_VISIBLE);
 			SetTimer(ID_TIMER, TIMER_INTERVAL);
 		}
@@ -230,13 +241,13 @@ public :
 			m_cPointBtnPos.y = point.y - m_cPointMouseDown.y + rect.top - rectParent.top;
 			if(m_cPointBtnPos.y < 0)
 				m_cPointBtnPos.y = 0;
-			if(m_cPointBtnPos.y > rectParent.Height() - HEIGHT)
-				m_cPointBtnPos.y = rectParent.Height() - HEIGHT;
-			MoveWindow( m_cPointBtnPos.x, m_cPointBtnPos.y, WIDTH, HEIGHT);
+			if(m_cPointBtnPos.y > rectParent.Height() - m_iconLength)
+				m_cPointBtnPos.y = rectParent.Height() - m_iconLength;
+			MoveWindow( m_cPointBtnPos.x, m_cPointBtnPos.y, m_iconLength, m_iconLength);
 		}
 
 		ReleaseCapture();
-		if(m_BMouseDown && point.x >= 0 && point.x <= WIDTH && point.y >= 0 && point.y <= HEIGHT)
+		if(m_BMouseDown && point.x >= 0 && point.x <= m_iconLength && point.y >= 0 && point.y <= m_iconLength)
 		{
 			DoPickWord();
 		}

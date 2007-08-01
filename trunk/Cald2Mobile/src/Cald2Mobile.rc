@@ -88,7 +88,7 @@ CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Cald2Mobile v0.6",IDC_STATIC,38,10,70,8,SS_NOPREFIX
+    LTEXT           "Cald2Mobile v0.62",IDC_STATIC,38,10,70,8,SS_NOPREFIX
     LTEXT           "License: GPL 2.0",IDC_STATIC,38,25,70,8
 END
 
@@ -191,7 +191,7 @@ END
 STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "Cald2Mobile"
-    IDS_VERSION             "0.6"
+    IDS_VERSION             "0.62"
 END
 
 STRINGTABLE 
