@@ -299,9 +299,12 @@ public :
 		m_view->m_wndHtmlViewer.ZoomLevel(m_setting.GetZoomLevel());
 		
 		CAtlString contentHtmlPath;
+		int width = ::GetDeviceCaps(m_view->GetDC(), HORZRES) ;
+		int height = ::GetDeviceCaps(m_view->GetDC(), VERTRES) ;
 		int dpi = ::GetDeviceCaps(m_view->GetDC(), LOGPIXELSX) ;
-		this->m_isVGA = dpi == 96;
-		SK_TRACE(SK_LOG_DEBUG, _T("m_isVGA = %d"), this->m_isVGA);
+		this->m_isVGA = (max(width, height) >= 640 && dpi == 96);
+		SK_TRACE(SK_LOG_DEBUG, _T("width = %d, height = %d, dpi = %d, m_isVGA = %d"), 
+			width, height, dpi, this->m_isVGA);
 
 		if(this->m_isVGA)
 		{
