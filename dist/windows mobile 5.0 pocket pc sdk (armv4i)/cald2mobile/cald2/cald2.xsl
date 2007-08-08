@@ -6,6 +6,7 @@
   <xsl:output method="html" encoding="UTF-16" />
 
   <xsl:variable name="root" select="/skshell/@root" />
+  <xsl:variable name="isVGA" select="/skshell/@isVGA" />
 
   <xsl:template match="/">
     <xsl:apply-templates />
@@ -370,7 +371,22 @@
         <xsl:value-of select="./@id" />
         <xsl:text>.xml']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/png/ExtEx.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/png/ExtEx.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -382,7 +398,22 @@
         <xsl:value-of select="./p:wbuild/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/WBuild.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/WBuild.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -394,7 +425,22 @@
         <xsl:value-of select="./p:collpan/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/Colls.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/Colls.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>      
     </xsl:element>
   </xsl:template>
 
@@ -406,7 +452,22 @@
         <xsl:value-of select="./p:vinf/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/VerbEnd.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/VerbEnd.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -418,7 +479,22 @@
         <xsl:value-of select="./p:vinf/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/VerbEnd.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/VerbEnd.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -430,7 +506,22 @@
         <xsl:value-of select="./p:clepan/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/CLE.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/CLE.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">160</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">80</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -442,7 +533,22 @@
         <xsl:value-of select="./p:upan/@url" />
         <xsl:text>.HTM']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/UseNote.png" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/UseNote.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>      
     </xsl:element>
   </xsl:template>
 
@@ -495,19 +601,86 @@
 
 
   <xsl:template match="span[@class='E']">
-    <img src="{$root}/cald2/png/E.png" align="absmiddle" style="margin: 3px;" />
+    <xsl:element name="img">
+      <xsl:attribute name="src">
+        <xsl:value-of select="$root" />
+        <xsl:text>/cald2/png/E.png</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="align">absmiddle</xsl:attribute>
+      <xsl:attribute name="style">margin: 3px;</xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="1 = $isVGA">
+          <xsl:attribute name="width">25</xsl:attribute>
+          <xsl:attribute name="height">15</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="width">12</xsl:attribute>
+          <xsl:attribute name="height">8</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="span[@class='I']">
-    <img src="{$root}/cald2/png/I.png" align="absmiddle" style="margin: 3px;" />
+    <xsl:element name="img">
+      <xsl:attribute name="src">
+        <xsl:value-of select="$root" />
+        <xsl:text>/cald2/png/I.png</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="align">absmiddle</xsl:attribute>
+      <xsl:attribute name="style">margin: 3px;</xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="1 = $isVGA">
+          <xsl:attribute name="width">25</xsl:attribute>
+          <xsl:attribute name="height">15</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="width">12</xsl:attribute>
+          <xsl:attribute name="height">8</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="span[@class='A']">
-    <img src="{$root}/cald2/png/A.png" align="absmiddle" style="margin: 3px;" />
+    <xsl:element name="img">
+      <xsl:attribute name="src">
+        <xsl:value-of select="$root" />
+        <xsl:text>/cald2/png/A.png</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="align">absmiddle</xsl:attribute>
+      <xsl:attribute name="style">margin: 3px;</xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="1 = $isVGA">
+          <xsl:attribute name="width">25</xsl:attribute>
+          <xsl:attribute name="height">15</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="width">12</xsl:attribute>
+          <xsl:attribute name="height">8</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="span[@class='US_pron.bmp']">
-    <img src="{$root}/cald2/png/us.png" align="absmiddle" />
+    <xsl:element name="img">
+      <xsl:attribute name="src">
+        <xsl:value-of select="$root" />
+        <xsl:text>/cald2/png/us.png</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="align">absmiddle</xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="1 = $isVGA">
+          <xsl:attribute name="width">15</xsl:attribute>
+          <xsl:attribute name="height">13</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="width">8</xsl:attribute>
+          <xsl:attribute name="height">7</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:element>    
   </xsl:template>
 
   <xsl:template match="span[@class='pronus']">
@@ -518,7 +691,22 @@
         <xsl:value-of select="@path" />
         <xsl:text>']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/entry/pronus.gif" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/entry/pronus.gif</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">42</xsl:attribute>
+            <xsl:attribute name="height">17</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">21</xsl:attribute>
+            <xsl:attribute name="height">8</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -530,7 +718,22 @@
         <xsl:value-of select="@path" />
         <xsl:text>']);return false;</xsl:text>
       </xsl:attribute>
-      <img src="{$root}/cald2/gif/entry/pronuk.gif" />
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/gif/entry/pronuk.gif</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">42</xsl:attribute>
+            <xsl:attribute name="height">17</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">21</xsl:attribute>
+            <xsl:attribute name="height">8</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -550,38 +753,5 @@
       <xsl:text>. </xsl:text>
     </span>
   </xsl:template>
-
-
-  <!--
-<xsl:template match="span[@class='ExtEx']">
-	<img src="{$root}/cald2/png/ExtEx.png" align="absmiddle" style="cursor: pointer;" onclick="alert('ExtEx');" />
-</xsl:template>
-
-<xsl:template match="span[@class='WBuild']">
-	<img src="{$root}/cald2/gif/WBuild.png" align="absmiddle" style="cursor: pointer;" onclick="alert('WBuild');" />
-</xsl:template>
-
-<xsl:template match="span[@class='Colls']">
-	<img src="{$root}/cald2/gif/Colls.png" align="absmiddle" style="cursor: pointer;" onclick="alert('Colls');" />
-</xsl:template>
-
-<xsl:template match="span[@class='VerbEnd']">
-	<img src="{$root}/cald2/gif/VerbEnd.png" align="absmiddle" style="cursor: pointer;" onclick="alert('VerbEnd');" />
-</xsl:template>
-
-<xsl:template match="span[@class='CLE']">
-	<img src="{$root}/cald2/gif/CLE.png" align="absmiddle" style="cursor: pointer;" onclick="alert('CLE');" />
-</xsl:template>
-
-<xsl:template match="span[@class='UseNote']">
-	<img src="{$root}/cald2/gif/UseNote.png" align="absmiddle" style="cursor: pointer;" onclick="alert('UseNote');" />
-</xsl:template>
-
-<xsl:template match="span[@class='ST']">
-	<form name='SmartThesaurus' action='' method='post' >
-		<input type='image' src="{$root}/cald2/gif/ST.png" />
-	</form>
-</xsl:template>
--->
 
 </xsl:stylesheet>

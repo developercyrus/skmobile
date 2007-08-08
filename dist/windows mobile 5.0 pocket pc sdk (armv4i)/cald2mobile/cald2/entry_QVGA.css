@@ -1,32 +1,32 @@
 
 span.head
 {
-  display: block;
-  margin-left: 0px;
-  text-indent: -2px;
-  padding-bottom: 1px;
-  font-size: 9px;
-  line-height: auto;
-  color: #000099;
+	display: block;
+	margin-left: 0px;
+	text-indent: -2px;
+	padding-bottom: 1px;
+	font-size: 9px;
+	line-height: auto;
+	color: #000099;
 }
 
 span.sensehead
 {
-  display : none;
+	display: none;
 }
 
 span.w
 {
-	font-family : "Charis SIL";
-  font-weight: bold;
-  font-size: 12px;
+	font-family: "Charis SIL";
+	font-weight: bold;
+	font-size: 12px;
 	padding-right: 2px;
-  color: #000099;
+	color: #000099;
 }
 
 span.gw
 {
-	font-family : "Charis SIL";
+	font-family: "Charis SIL";
 	font-weight: bold;
 	font-size: 9px;
 	color: #990000;
@@ -36,150 +36,149 @@ span.gw
 
 span.phrase
 {
-	font-family : "Charis SIL";
-  font-weight: bold;
-  font-size: 10px;
-  padding-right: 2px;
-  color: #000099;
+	font-family: "Charis SIL";
+	font-weight: bold;
+	font-size: 10px;
+	padding-right: 2px;
+	color: #000099;
 }
 
 span.idiom
 {
-	font-family : "Charis SIL";
+	font-family: "Charis SIL";
 	font-weight: bold;
 	font-size: 10px;
-  padding-right: 2px;
-  color: #0033FF;
+	padding-right: 2px;
+	color: #0033FF;
 }
 
-span.pv {
-	font-family : "Charis SIL";
+span.pv
+{
+	font-family: "Charis SIL";
 	font-weight: bold;
 	font-size: 10px;
 	color: #008000;
 	padding-right: 2px;
 }
 
-span.def span.b {
-  font-weight:bold;
-  font-size:10px;
-  padding-right: 2px;
-  color: #0033FF;
+span.def span.b
+{
+	font-weight: bold;
+	font-size: 10px;
+	padding-right: 2px;
+	color: #0033FF;
 }
 
-span.hwsense,
-span.pvsense,
-span.rosense,
-span.idsense {
-	margin-left : 16px;
+span.hwsense, span.pvsense, span.rosense, span.idsense
+{
+	margin-left: 16px;
 	display: block;
-  text-indent: -8px;
+	text-indent: -8px;
 }
 
 span.b
 {
-  font-weight: bold;
+	font-weight: bold;
 }
 
 span.i
 {
-  font-style: italic;
+	font-style: italic;
 }
 
 span.gl
 {
-  display :inline;
-  font-weight:normal;
-  font-style: normal;
+	display: inline;
+	font-weight: normal;
+	font-style: normal;
 }
 
 span.pron
 {
-	font-family : "Charis SIL";
-  font-size: 10px;
+	font-family: "Charis SIL";
+	font-size: 10px;
 }
 
 
 span.sense
 {
-  display: block;
-  margin-top: 0.0em;
-  margin-bottom: 0.1em;
-  margin-left: 6px;
+	display: block;
+	margin-top: 0.0em;
+	margin-bottom: 0.1em;
+	margin-left: 6px;
 }
 
 span.def
 {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  font-size: 9px;
-  line-height: 9px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	font-size: 9px;
+	line-height: 9px;
 }
 
 span.unote
 {
-  display: block;
-  font-size: 9px;
-  font-style: normal;
-  line-height: 9px;
-  padding-top: 2px;
-  padding-bottom: 2px;
+	display: block;
+	font-size: 9px;
+	font-style: normal;
+	line-height: 9px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 span.ro
 {
-  display: block;
-  padding-bottom: 2px;
-  padding-top: 4px;
-  font-size: 9px;
-  margin-left: 7px;
+	display: block;
+	padding-bottom: 2px;
+	padding-top: 4px;
+	font-size: 9px;
+	margin-left: 7px;
 }
 
 span.examp
 {
-  display:list-item;
-  margin-left: 13px;
-  padding-top: 1px;
-  padding-bottom:0px;
-  font-size: 9px;
-  font-style:italic;
-  line-height : 9px;
+	display: list-item;
+	margin-left: 13px;
+	padding-top: 1px;
+	padding-bottom: 0px;
+	font-size: 9px;
+	font-style: italic;
+	line-height: 9px;
 }
 
 
-span.gram + span.eg {
-  padding-left:2px;
+span.gram + span.eg
+{
+	padding-left: 2px;
 }
 
 .definition
 {
-  margin-left: 6px;
+	margin-left: 6px;
 }
 
-span.pos,
-span.type
+span.pos, span.type
 {
-  font-style: italic;
-  color: black;
-  font-size: 10px;
+	font-style: italic;
+	color: black;
+	font-size: 10px;
 }
 
 span.gram
 {
-  font-size: 10px;
-  color: #000099;
+	font-size: 10px;
+	color: #000099;
 }
 
-span.rel,
-span.vrel
+span.rel, span.vrel
 {
-  display:none;
+	display: none;
 }
 
 span.region
 {
-  font-variant: small-caps;
-  font-size: 11px;
+	font-variant: small-caps;
+	font-size: 11px;
 }
 
 span.usage
@@ -188,253 +187,270 @@ span.usage
 	font-size: 11px;
 }
 
-span.xref {
-  display: block;
-  margin-left : 4px;
-  padding-top:	2px;
+span.xref
+{
+	display: block;
+	margin-left: 4px;
+	padding-top: 2px;
 }
 
 span.x
 {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 span.VerbInflections
 {
-  margin-left:	1px;
-  margin-top: 	1px;
-  margin-bottom: 3px;
-  padding-bottom:0px;
-  line-height: 	1.0em;
-  padding: 			1px;
-  margin-right : 0.5em;
+	margin-left: 1px;
+	margin-top: 1px;
+	margin-bottom: 3px;
+	padding-bottom: 0px;
+	line-height: 1.0em;
+	padding: 1px;
+	margin-right: 0.5em;
 }
 
 
 span.VerbInflectionsNew
 {
-  font-size: 9px;
+	font-size: 9px;
 }
 
 
 span.WordBuilding
 {
-  margin-left: 		1px;
-  margin-top: 		1px;
-  margin-bottom: 	3px;
-  padding-bottom:	0px;
-  padding: 				1px;
-  margin-right: 	0.5em;
+	margin-left: 1px;
+	margin-top: 1px;
+	margin-bottom: 3px;
+	padding-bottom: 0px;
+	padding: 1px;
+	margin-right: 0.5em;
 }
 
 span.Collocations
 {
-	margin-left: 		1px;
-	margin-top: 		1px;
-	margin-bottom: 	3px;
-	padding-bottom:	0px;
-	line-height: 		1.2em;
-	padding: 				1px;
-	margin-right: 	0.5em;
+	margin-left: 1px;
+	margin-top: 1px;
+	margin-bottom: 3px;
+	padding-bottom: 0px;
+	line-height: 1.2em;
+	padding: 1px;
+	margin-right: 0.5em;
 }
 
 span.UsageNote
 {
-   margin-left: 	1px;
-   margin-top: 		1px;
-   margin-bottom: 3px;
-   padding-bottom:0px;
-   line-height: 	1.2em;
-   padding: 			1px;
-   margin-right: 	0.5em;
+	margin-left: 1px;
+	margin-top: 1px;
+	margin-bottom: 3px;
+	padding-bottom: 0px;
+	line-height: 1.2em;
+	padding: 1px;
+	margin-right: 0.5em;
 }
 
 span.CommonLearnerError
 {
-	margin-left: 		1px;
-	margin-top: 		1px;
-	margin-bottom: 	3px;
+	margin-left: 1px;
+	margin-top: 1px;
+	margin-bottom: 3px;
 	padding-bottom: 0px;
-	line-height: 		1.2em;
-	padding: 				1px;
-	margin-right: 	0.5em;
+	line-height: 1.2em;
+	padding: 1px;
+	margin-right: 0.5em;
 }
 
 span.SemCat
 {
-   display: 			block;
-   margin-left: 	18px;
-   margin-top: 		3px;
-   margin-bottom: 1px;
-   padding-bottom:0px;
-   padding: 			1px;
-   max-width: 		25px;
+	display: block;
+	margin-left: 18px;
+	margin-top: 3px;
+	margin-bottom: 1px;
+	padding-bottom: 0px;
+	padding: 1px;
+	max-width: 25px;
 }
 
 
-span.ExtraExamples {
-  margin-top: 		3px;
-  margin-bottom: 	1px;
-  padding-top: 		0px;
-  padding-bottom: 0px;
-  padding-left: 	2px;
-  line-height: 		1.2em;
-  font-size: 			9px;
-  font-style: 		italic;
-  line-height : 	9px;
+span.ExtraExamples
+{
+	margin-top: 3px;
+	margin-bottom: 1px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 2px;
+	line-height: 1.2em;
+	font-size: 9px;
+	font-style: italic;
+	line-height: 9px;
 }
 
 
 span.PictureReferences
 {
-  display: 				block;
-  margin-left: 		9px;
-  margin-top: 		1px;
-  margin-bottom: 	1px;
-  padding-bottom:	2px;
-  font-size: 			9px;
-  line-height: auto;
+	display: block;
+	margin-left: 9px;
+	margin-top: 1px;
+	margin-bottom: 1px;
+	padding-bottom: 2px;
+	font-size: 9px;
+	line-height: auto;
 }
 
 span.picref
 {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 div.runon
 {
-  display:					block;
-  margin-top: 			1px;
-  margin-bottom: 		3px;
-  padding-bottom:		0px;
-  font-size: 				9px;
-  line-height: 			auto;
+	display: block;
+	margin-top: 1px;
+	margin-bottom: 3px;
+	padding-bottom: 0px;
+	font-size: 9px;
+	line-height: auto;
 }
 
 A:link
 {
-  color: rgb(44,86,99);
-  text-decoration: none;
-  font-variant: normal;
-  font-weight : normal;
+	color: rgb(44,86,99);
+	text-decoration: none;
+	font-variant: normal;
+	font-weight: normal;
 }
 
 A:visited
 {
-  color: #666666;
-  text-decoration: none;
-  font-weight: normal;
-  font-variant: normal;
+	color: #666666;
+	text-decoration: none;
+	font-weight: normal;
+	font-variant: normal;
 }
 
 A:hover
 {
-  text-decoration : none;
+	text-decoration: none;
 }
 
 A:active
 {
-  color: #CC0000;
-  text-decoration: none;
-  font-weight: normal;
-  font-variant: normal;
+	color: #CC0000;
+	text-decoration: none;
+	font-weight: normal;
+	font-variant: normal;
 }
 
 A:focus
 {
-  background-color: yellow;
+	background-color: yellow;
 }
 
-.numsense {
+.numsense
+{
 	font-weight: bold;
 }
 
-.prontype {
+.prontype
+{
 	font-variant: small-caps;
 }
 
-span.lab {
-  font-variant : 	small-caps;
-  font-style: 		normal;
-  font-weight : 	500;
-  font-size: 			11px;
+span.lab
+{
+	font-variant: small-caps;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 11px;
 }
 
 span.infgrp
 {
-   /* display:none; */
+	/* display:none; */
 }
 
-span.inf {
-  font-weight : bold;
+span.inf
+{
+	font-weight: bold;
 }
 
-span.ro span.spellvar span.v {
-  font-weight: bold;
-  font-size: 10px;
-  color: #000099;
+span.ro span.spellvar span.v
+{
+	font-weight: bold;
+	font-size: 10px;
+	color: #000099;
 }
 
-span.spellvar span.v {
-  font-weight: bold;
-  font-size: 11px;
-  color: #000099;
+span.spellvar span.v
+{
+	font-weight: bold;
+	font-size: 11px;
+	color: #000099;
 }
 
-span.var span.v {
-  font-weight: bold;
-  font-size: 9px;
-  color: #000099;
+span.var span.v
+{
+	font-weight: bold;
+	font-size: 9px;
+	color: #000099;
 }
 
-span.ukpron {
-	font-family : "Charis SIL";
+span.ukpron
+{
+	font-family: "Charis SIL";
 	color: red;
 }
 
-span.uspron {
-	font-family : "Charis SIL";
-	color : blue;
+span.uspron
+{
+	font-family: "Charis SIL";
+	color: blue;
 }
 
-.superscript {
-  vertical-align: 40%;
-  font-size: 10px;
+.superscript
+{
+	vertical-align: 40%;
+	font-size: 10px;
 }
 
-span.xref span.x {
-  padding-left: 2px;
+span.xref span.x
+{
+	padding-left: 2px;
 }
 
 .grammar
 {
-  font-size: 10px;
-  color: #000099;
-  padding-right: 2px;
-  font-style: normal;
+	font-size: 10px;
+	color: #000099;
+	padding-right: 2px;
+	font-style: normal;
 }
 
-.extraexamp {
-	display : block;
-	font-size : 11px;
-	font-style : italic;
+.extraexamp
+{
+	display: block;
+	font-size: 11px;
+	font-style: italic;
 	color: #000099;
 }
 
-span.listHeader {
-  font-size : 	11px;
-  font-weight: 	bold;
-  color: 				blue;
+span.listHeader
+{
+	font-size: 11px;
+	font-weight: bold;
+	color: blue;
 }
 
-span.listItem {
-	font-family : "Charis SIL";
-  font-size : 	9px;
+span.listItem
+{
+	font-family: "Charis SIL";
+	font-size: 9px;
 }
 
-span.wordlistHW {
-	font-family : "Charis SIL";
-  font-size: 		10px;
-  font-weight: 	bold;
-  color: 				#000080;
+span.wordlistHW
+{
+	font-family: "Charis SIL";
+	font-size: 10px;
+	font-weight: bold;
+	color: #000080;
 }

@@ -943,7 +943,8 @@ protected :
 			UINT end = begin + offset;
 
 			ostringstream buf;
-			buf << "<skshell root='" << m_setting.GetRootPathCString() << "'>"
+			buf << "<skshell root='" << m_setting.GetRootPathCString() 
+				<< "' isVGA='" << m_isVGA << "'>"
 				<< "<results xmlns:p='Edi'"
 				<< "  total='" << count
 				<< "' begin='" << begin
@@ -1001,7 +1002,7 @@ protected :
 
 
 	void setWordListPage(UINT begin)
-	{
+		{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::setWordListPage(%d)"), begin);
 
 		try
@@ -1013,7 +1014,8 @@ protected :
 			UINT offset = min(m_wordListCount - m_currentWordListBegin, m_setting.GetWordListPageSize());
 			UINT end = begin + offset;
 			ostringstream buf;
-			buf << "<skshell root='" << m_setting.GetRootPathCString() << "'>"
+			buf << "<skshell root='" << m_setting.GetRootPathCString() 
+				<< "' isVGA='" << m_isVGA << "'>"
 				<< "<wordlist xmlns:p='Edi'"
 				<< "  total='" << m_wordListCount
 				<< "' begin='" << begin
@@ -1091,7 +1093,8 @@ protected :
 				{
 					result.isXml = TRUE;
 					ostringstream buf;
-					buf << "<skshell root='" << m_setting.GetRootPathCString() << "'>"
+					buf << "<skshell root='" << m_setting.GetRootPathCString() 
+						<< "' isVGA='" << m_isVGA << "'>"
 						<< "<content>"
 						<< contentData
 						<< "</content>"
