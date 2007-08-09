@@ -62,7 +62,7 @@ public:
 	BEGIN_MSG_MAP(CMainFrame)
 		MSG_WM_CREATE	( OnCreate )
 		// MSG_WM_DESTROY	( OnDestroy )
-		// MSG_WM_KEYDOWN	( OnKeyDown )
+		MSG_WM_KEYDOWN	( OnKeyDown )
 		MSG_WM_COPYDATA	( m_view.m_controller->OnCopyData )
 		// MSG_WM_ACTIVATE ( m_view.m_controller->OnActivate )
 		COMMAND_ID_HANDLER(ID_ACTION,		m_view.m_controller->OnAction)
@@ -85,6 +85,14 @@ public:
 
 	int OnCreate(LPCREATESTRUCT lpCreateStruct)
 	{
+		m_setting.Load();
+		m_pickWordKey = m_setting.LoadIntValue("MYSK_PICK_BUTTON_APP_KEY", 0);
+		if(0 != m_pickWordKey)
+		{
+			m_pickWordKey += 0xC0; // VK_APP1 = 0xC1;
+			SHSetAppKeyWndAssoc(m_pickWordKey, *this);
+		}
+
 		// initial controller
 		m_view.setController(m_controllerFactory.create("Cald2"));
 		m_view.m_controller->Init(this);
@@ -92,7 +100,7 @@ public:
 		CreateSimpleCEMenuBar();
 
 		m_hWndClient = m_view.Create(m_hWnd);
-		m_wndPick.MyCreate();
+		m_wndPick.MyCreate(m_setting);
 
 		// register object for message filtering and idle updates
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -154,27 +162,19 @@ public:
 
 		return CAppWindow<CMainFrame>::OnActivate(uMsg, wParam, lParam, bHandled);
 	}
-
+*/
 
 
 	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
-		switch(nChar)
+		if(0 != m_pickWordKey && nChar == m_pickWordKey)
 		{
-		case VK_APP1 :
-			backLaskActiveWindow();
-			break;
-		case VK_APP2 :
-			break;
-		case VK_APP3 :
-			break;
-		case VK_APP4 :
-			break;
+			m_wndPick.DoPickWord();
+			return;
 		}
-		int i = 0;
 	}
 
-*/
+
 
 
 /*
@@ -197,6 +197,10 @@ public:
 	}
 
 */
+
+	Setting					m_setting;
+
+	UINT					m_pickWordKey;
 
 	HMENU					m_mainMenu;
 

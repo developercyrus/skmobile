@@ -27,6 +27,7 @@ using namespace mysk;
 #include "Script.h"
 #include "Controller.h"
 
+#include "Setting.h"
 #include "PickButton.h"
 #include "Cald2MobileView.h"
 #include "aboutdlg.h"

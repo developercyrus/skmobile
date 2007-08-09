@@ -30,7 +30,7 @@ public :
 		DestroyWindow();
 	}
 
-	void MyCreate()
+	void MyCreate(Setting & setting)
 	{
 		CWindow wndTaskBar = findTaskBar();
 		if(NULL != wndTaskBar)
@@ -58,6 +58,12 @@ public :
 				taskBarRect.CenterPoint().y - m_iconLength / 2, 
 				taskBarRect.CenterPoint().x + m_iconLength / 2, 
 				taskBarRect.CenterPoint().y + m_iconLength / 2 );
+			int pos = setting.LoadIntValue("MYSK_PICK_BUTTON_POSITION", 0);
+			if(0 != pos) 
+			{
+				rect.left = pos;
+				rect.right = pos + m_iconLength;
+			}
 			this->Create(wndTaskBar, rect, _T("PickWord1"), WS_CHILD|WS_VISIBLE);
 			SetTimer(ID_TIMER, TIMER_INTERVAL);
 		}
@@ -137,8 +143,8 @@ public :
 		{
 			COPYDATASTRUCT cd = { NULL, sizeof(TCHAR) * (theWord.GetLength() + 1), (LPVOID)(LPCTSTR)theWord };
 			::SendMessage(mainFrame, WM_COPYDATA, (WPARAM)m_hMouseDownActiveWindow, (LPARAM)&cd);
-			::EmptyClipboard();
 		}		
+		::EmptyClipboard();
 		CloseClipboard();
 	}
 

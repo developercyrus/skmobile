@@ -7,8 +7,6 @@ public :
 
 	static const unsigned int MAX_HTML_TAB = 10;
 
-	static const unsigned int INPUT_CHANGED_TIMEOUT = 1000;
-
 
 
 	BasicController() : m_lastInputPannelStatus(FALSE), m_isSearching(FALSE), m_isHandlingHotspot(FALSE), m_inputChangedTimer(0)
@@ -31,6 +29,7 @@ public :
 	{
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::Init(CMainFrame * mainFrame)");
 		m_mainFrame = mainFrame;
+		m_wordlistDelay = m_mainFrame->m_setting.LoadIntValue("MYSK_WORDLIST_DELAY", 2000);
 	}
 
 
@@ -126,7 +125,7 @@ public :
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnInputChanged");
 
 		// wait the user stop to press key
-		m_inputChangedTimer = m_view->SetTimer(ID_TIMER_INPUTCHANGED, INPUT_CHANGED_TIMEOUT);
+		m_inputChangedTimer = m_view->SetTimer(ID_TIMER_INPUTCHANGED, m_wordlistDelay);
 		return S_OK;
 	}
 
@@ -987,5 +986,7 @@ protected :
 	CSimpleArray<CAtlString>	m_queryModes;
 
 	UINT_PTR			m_inputChangedTimer;
+
+	UINT				m_wordlistDelay;
 
 };
