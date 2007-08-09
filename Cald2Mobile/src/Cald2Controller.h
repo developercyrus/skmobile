@@ -450,7 +450,16 @@ public :
 	{
 		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnUpKey");
 
-		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
+		HWND focusHwnd = ::GetFocus();
+		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
+		{
+			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
+
+			// skip to m_wndContentTabView
+			m_view->m_wndContentTabView.SetFocus();
+			return TRUE;
+		}
+		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
@@ -470,7 +479,16 @@ public :
 	{
 		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnDownKey");
 
-		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
+		HWND focusHwnd = ::GetFocus();
+		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
+		{
+			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
+
+			// skip to m_wndContentTabView
+			m_view->m_wndContentTabView.SetFocus();
+			return TRUE;
+		}
+		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
@@ -494,10 +512,8 @@ public :
 		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
 		{
 			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
-
-			// skip to m_wndContentTabView and generate Up event
-			m_view->m_wndContentTabView.SetFocus();
-			return TRUE;
+			// do nothing
+			return FALSE;
 		}
 		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
@@ -552,10 +568,8 @@ public :
 		if(m_view->m_wndInput.IsChild(focusHwnd) || m_view->m_wndInput == focusHwnd)
 		{
 			SK_TRACE(SK_LOG_DEBUG, "In input edit box.");
-
-			// skip to m_wndContentTabView and generate Down event
-			m_view->m_wndContentTabView.SetFocus();
-			return TRUE;
+			// do nothing
+			return FALSE;
 		}
 		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
