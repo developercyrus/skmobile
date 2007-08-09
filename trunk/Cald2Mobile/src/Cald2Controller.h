@@ -527,7 +527,7 @@ public :
 				CAtlString prevUrlPath = m_contentHistory.GetPrev();
 				if(!prevUrlPath.IsEmpty())
 				{
-					this->handleSetContentTab(prevUrlPath);
+					this->handleSetContentTab(prevUrlPath, FALSE);
 				}
 				return TRUE;
 			}
@@ -585,7 +585,7 @@ public :
 				CAtlString nextUrlPath = m_contentHistory.GetNext();
 				if(!nextUrlPath.IsEmpty())
 				{
-					this->handleSetContentTab(nextUrlPath);
+					this->handleSetContentTab(nextUrlPath, FALSE);
 				}
 				return TRUE;
 			}
@@ -674,8 +674,7 @@ protected :
 		{
 			// only one parameter 'path'
 			CAtlString const& path = params[0];
-			if(handleSetContentTab(path))
-				m_contentHistory.Add(path);
+			handleSetContentTab(path, TRUE);
 		}
 		else if(command == _T("playSound"))
 		{
@@ -773,7 +772,7 @@ protected :
 
 
 
-	BOOL handleSetContentTab(CAtlString const& urlPath)
+	BOOL handleSetContentTab(CAtlString const& urlPath, BOOL addToHistory)
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleSetContentTab(%s)"), urlPath);
 
@@ -793,6 +792,8 @@ protected :
 				Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
 			if(!result.archor.IsEmpty() && _T("0") != result.archor)
 				Base::htmlAnchor(result.archor);
+			if(addToHistory)
+				m_contentHistory.Add(urlPath);
 			return TRUE;
 		}
 		catch (truntime_error& e)
@@ -988,7 +989,7 @@ protected :
 				urlPath.AppendFormat(_T("sk://fs/2.0/data/entry/filesystem.cff!/@%d"), item.entryId);
 				if(item.contextId != "0" )
 					urlPath.AppendFormat(_T("#%s"), CA2W(item.contextId.c_str(), CP_UTF8));
-				this->handleSetContentTab(urlPath);
+				this->handleSetContentTab(urlPath, TRUE);
 			}
 		}
 		catch (truntime_error& e)
