@@ -705,7 +705,7 @@ protected :
 
 	BOOL setStyleSheet(CAtlString const& xslContent)
 	{
-		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::setStyleSheet()\n%s"), xslContent);
+		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::setStyleSheet()\n"));
 
 		if(!m_script.isReady())
 		{

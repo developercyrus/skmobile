@@ -405,6 +405,8 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, _T("xslPath = %s"), xslPath);
 
 				CAtlString xslContent = loadFile(xslPath);
+				xslContent.Replace('\n', ' ');
+				xslContent.Replace('\r', ' ');
 				Base::setStyleSheet(xslContent);
 
 				// load word list
