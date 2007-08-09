@@ -105,168 +105,6 @@ protected :
 
 
 
-class Cald2Setting 
-{
-public :
-
-	void Load()
-	{
-		m_rootPathA = CW2A(_RootPath, CP_UTF8);
-
-		TCHAR tempPath[1024] = {0};
-		::GetTempPath(sizeof tempPath, tempPath);
-		m_tempPathW = tempPath;
-		m_tempPathW += _T("Cald2Mobile");
-		m_tempPathA = CW2A(m_tempPathW, CP_UTF8);
-		
-		SKEnvir::GetEnvir(&m_envir);
-		SKERR err = m_envir->Init(m_rootPathA);
-		if(err != noErr)
-		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to inital SKEnvir. error=%d"), err);
-			return;
-		}
-		m_iniPath.Format(_T("%s/sk.ini"), _RootPath);
-
-		m_wordListPageSize = LoadIntValue("MYSK_WORDLIST_PAGE_SIZE", 15);
-
-		m_resultsPageSize = LoadIntValue("MYSK_RESULTS_PAGE_SIZE", 20);
-
-		m_queryMode = LoadIntValue("MYSK_QUERY_MODE", 0x07);
-
-		m_zoomLevel = LoadIntValue("MYSK_ZOOM_LEVEL", 2);
-	}
-
-
-
-	void Save()
-	{
-	}
-
-
-
-	char const* GetRootPathCString()
-	{
-		return this->m_rootPathA;
-	}
-
-
-
-	char const* GetTempPathCString()
-	{
-		return this->m_tempPathA;
-	}
-
-
-
-	tchar const* GetTempPathWString()
-	{
-		return this->m_tempPathW;
-	}
-
-
-
-	UINT GetWordListPageSize()
-	{
-		return this->m_wordListPageSize;
-	}
-
-
-
-	UINT GetResultsPageSize()
-	{
-		return this->m_resultsPageSize;
-	}
-
-
-
-	UINT GetQueryMode()
-	{
-		return this->m_queryMode;
-	}
-
-
-
-	 void SetQueryMode(UINT queryMode)
-	{
-		this->m_queryMode = queryMode;
-	}
-
-
-
-	UINT GetZoomLevel()
-	{
-		return this->m_zoomLevel;
-	}
-
-
-
-protected :
-
-	char const* LoadStringValue(char const* key, char const* defaultValue = "")
-	{
-		char * value = NULL;
-		m_envir->GetValue(key, &value);
-		if(NULL == value || 0 == strlen(value))
-			return defaultValue;
-		else
-			return value;
-	}
-	
-
-
-	UINT LoadIntValue(char const* key, UINT defaultValue = 0)
-	{
-		char * value = NULL;
-		m_envir->GetValue(key, &value);
-		if(NULL == value || 0 == strlen(value))
-			return defaultValue;
-		else
-			return atoi(value);
-	}
-
-
-
-	BOOL LoadBoolValue(char const* key, BOOL defaultValue = FALSE)
-	{
-		char * value = NULL;
-		m_envir->GetValue(key, &value);
-		if(NULL == value || 0 == strlen(value))
-			return defaultValue;
-		else
-		{
-			if(0 == strcmp("0", value))
-				return FALSE;
-			if(0 == _stricmp("false", value))
-				return FALSE;
-			return TRUE;
-		}
-	}
-
-
-
-	SKEnvir *	m_envir;
-
-	CAtlString	m_iniPath;
-
-	CAtlStringA m_rootPathA;
-
-	CAtlStringA m_tempPathA;
-
-	CAtlStringW m_tempPathW;
-
-	UINT		m_wordListPageSize;
-
-	UINT		m_resultsPageSize;
-
-	UINT		m_queryMode;
-
-	UINT		m_zoomLevel;
-
-};
-
-
-
 class Cald2Controller : public BasicController, public DictionaryService
 {
 public :
@@ -276,27 +114,34 @@ public :
 
 
 	Cald2Controller() : m_isFrist(TRUE), m_currentWordListBegin(0), m_wordListCount(0), m_currentResultsBegin(0)
-	{		
-		m_setting.Load();
-		DictionaryService::init(m_setting.GetRootPathCString());
+	{				
 	}
 
 
 
-	Cald2Setting * GetSetting()
+	virtual void Init(CMainFrame * mainFrame)
 	{
-		return &(this->m_setting);
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Init(CMainFrame * mainFrame)");
+
+		Base::Init(mainFrame);
+
+		m_wordListPageSize = mainFrame->m_setting.LoadIntValue("MYSK_WORDLIST_PAGE_SIZE", 15);
+		m_resultsPageSize = mainFrame->m_setting.LoadIntValue("MYSK_RESULTS_PAGE_SIZE", 20);
+		m_queryMode = mainFrame->m_setting.LoadIntValue("MYSK_QUERY_MODE", 0x07);
+		m_zoomLevel = mainFrame->m_setting.LoadIntValue("MYSK_ZOOM_LEVEL", 2);
+
+		DictionaryService::init(mainFrame->m_setting.GetRootPathCString());
 	}
 
 
 
 	virtual void Init(CSKMobileView * view) 
 	{
-		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Init");
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Init(CSKMobileView * view)");
 
 		Base::Init(view);
 
-		m_view->m_wndHtmlViewer.ZoomLevel(m_setting.GetZoomLevel());
+		m_view->m_wndHtmlViewer.ZoomLevel(m_zoomLevel);
 		
 		CAtlString contentHtmlPath;
 		int width = ::GetDeviceCaps(m_view->GetDC(), HORZRES) ;
@@ -324,9 +169,6 @@ public :
 	virtual void Fini()
 	{
 		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::Fini");
-
-		m_setting.SetQueryMode(Base::m_queryMode);
-		m_setting.Save();
 	}
 
 
@@ -397,7 +239,7 @@ public :
 					QueryModeInfo & info = QUERY_MODE_INFO[i];
 					Base::addQueryMode(info.name);
 				}
-				Base::setQueryMode(m_setting.GetQueryMode());
+				Base::setQueryMode(m_queryMode);
 				
 				// initial XSL
 				CAtlString xslPath;
@@ -405,8 +247,6 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, _T("xslPath = %s"), xslPath);
 
 				CAtlString xslContent = loadFile(xslPath);
-				xslContent.Replace('\n', ' ');
-				xslContent.Replace('\r', ' ');
 				Base::setStyleSheet(xslContent);
 
 				// load word list
@@ -526,7 +366,7 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
 
 				// word list page view				
-				this->setWordListPage(m_currentWordListBegin - m_setting.GetWordListPageSize());
+				this->setWordListPage(m_currentWordListBegin - m_wordListPageSize);
 				return TRUE;
 			}
 			else if(title == TAB_NAME_RESULTS)
@@ -534,7 +374,7 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
 
 				// result page view
-				this->setResultPage(m_currentResultsBegin - m_setting.GetResultsPageSize());
+				this->setResultPage(m_currentResultsBegin - m_resultsPageSize);
 				return TRUE;
 			}
 			else if(title == TAB_NAME_CONTENT)
@@ -582,7 +422,7 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
 
 				// word list page view
-				this->setWordListPage(m_currentWordListBegin + m_setting.GetWordListPageSize());
+				this->setWordListPage(m_currentWordListBegin + m_wordListPageSize);
 				return TRUE;
 			}
 			else if(title == TAB_NAME_RESULTS)
@@ -590,7 +430,7 @@ public :
 				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
 
 				// result page view
-				this->setResultPage(m_currentResultsBegin + m_setting.GetResultsPageSize());
+				this->setResultPage(m_currentResultsBegin + m_resultsPageSize);
 				return TRUE;
 			}
 			else if(title == TAB_NAME_CONTENT)
@@ -743,7 +583,7 @@ protected :
 
 			if(pos > 0 && pos < getWordListService()->getWordListCount())
 			{
-				UINT begin = pos - pos % m_setting.GetWordListPageSize();
+				UINT begin = pos - pos % m_wordListPageSize;
 				setWordListPage(begin);
 				CAtlString archor;
 				archor.Format(_T("wordlist-%d"), pos);
@@ -858,7 +698,7 @@ protected :
 				// skip /filesystem.cff
 				string dir = filesystem.substr(0, filesystem.size() - 15);
 				string utf8SoundFilePath;
-				utf8SoundFilePath.append(m_setting.GetTempPathCString()).append("/").append(dir).append("/").append(path);
+				utf8SoundFilePath.append(m_mainFrame->m_setting.GetTempPathCString()).append("/").append(dir).append("/").append(path);
 				soundFilePath = CA2W(utf8SoundFilePath.c_str(), CP_UTF8);
 
 				SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, utf8SoundFilePath = %s", 
@@ -956,11 +796,11 @@ protected :
 			}
 
 			m_currentResultsBegin = begin;
-			UINT offset = min(count - m_currentResultsBegin, m_setting.GetResultsPageSize());
+			UINT offset = min(count - m_currentResultsBegin, m_resultsPageSize);
 			UINT end = begin + offset;
 
 			ostringstream buf;
-			buf << "<skshell root='" << m_setting.GetRootPathCString() 
+			buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
 				<< "' isVGA='" << m_isVGA << "'>"
 				<< "<results xmlns:p='Edi'"
 				<< "  total='" << count
@@ -1028,10 +868,10 @@ protected :
 				return;
 
 			m_currentWordListBegin = begin;
-			UINT offset = min(m_wordListCount - m_currentWordListBegin, m_setting.GetWordListPageSize());
+			UINT offset = min(m_wordListCount - m_currentWordListBegin, m_wordListPageSize);
 			UINT end = begin + offset;
 			ostringstream buf;
-			buf << "<skshell root='" << m_setting.GetRootPathCString() 
+			buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
 				<< "' isVGA='" << m_isVGA << "'>"
 				<< "<wordlist xmlns:p='Edi'"
 				<< "  total='" << m_wordListCount
@@ -1110,7 +950,7 @@ protected :
 				{
 					result.isXml = TRUE;
 					ostringstream buf;
-					buf << "<skshell root='" << m_setting.GetRootPathCString() 
+					buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
 						<< "' isVGA='" << m_isVGA << "'>"
 						<< "<content>"
 						<< contentData
@@ -1228,11 +1068,17 @@ protected :
 	}
 
 
+	UINT			m_wordListPageSize;
+
+	UINT			m_resultsPageSize;
+
+	UINT			m_queryMode;
+
+	UINT			m_zoomLevel;
+
 	BOOL			m_isVGA;
 
 	BOOL			m_isFrist;
-
-	Cald2Setting	m_setting;
 
 	History			m_contentHistory;
 
