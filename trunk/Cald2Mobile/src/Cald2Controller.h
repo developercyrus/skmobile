@@ -1084,10 +1084,20 @@ protected :
 		SK_TRACE(SK_LOG_INFO, "checkDictionaryService : The SD/CF card is removed.");
 
 		CAtlString msg;
-		msg.Format(_T("FileDesc is invalidation.\nMaybe the SD/CF card was removed.\nPlease check the data files of Cald2Mobile.\n Then try again."));
+		msg.Format(_T("FileDesc is invalidation. Maybe the SD/CF card was removed. Please check the data files of Cald2Mobile. The dictionary engine will be initialled again."));
 		m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
 
-		loadDictionaryService();
+		SKERR err = loadDictionaryService();
+		if(noErr == err)
+		{
+			msg.Format(_T("The dictionary engine is initialled.\n You can work normally."));
+			m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONINFORMATION);
+		}
+		else
+		{
+			msg.Format(_T("Failed to initial the dictionary engine.\n Maybe you should restart the program."));
+			m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
+		}
 	}
 
 
