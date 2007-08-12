@@ -2,7 +2,6 @@
 #include "skcore/unicode/unicodesimplifier.h"
 
 #include <atltime.h>
-#include "unicode.h"
 
 using namespace std;
 using namespace mysk;
@@ -14,7 +13,7 @@ void DictionaryService::init(char const* skHome)
 	SKERR err;
 	SKEnvir *pEnvir = NULL;
 	err = SKEnvir::GetEnvir(&pEnvir);
-	if(noErr != err)
+	if(noErr != err)		
 		return;
 
 	err = pEnvir->Init(skHome);
@@ -31,61 +30,77 @@ void DictionaryService::init(char const* skHome)
 
 
 
-PRUint32 WordListService::findWordListPosition(std::wstring const& input)
+SKERR WordListService::findWordListPosition(std::wstring const& input, PRUint32 * pos)
 {
 	size_t len = wcstombs(NULL, input.c_str(), 0);
 	char * cinput = new char[len + 1];
 	wcstombs(cinput, input.c_str(), len);
 	string inputString(cinput, len);
 	delete[] cinput;
-	return this->findWordListPosition(inputString);
+	return this->findWordListPosition(inputString, pos);
 }
 
 
 
-void QueryService::query(std::wstring const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect)
+SKERR QueryService::query(std::wstring const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect)
 {
 	size_t len = wcstombs(NULL, input.c_str(), 0);
 	char * cinput = new char[len + 1];
 	wcstombs(cinput, input.c_str(), len);
 	string inputString(cinput, len);
 	delete[] cinput;
-	this->query(inputString, bUseFlex, types, bUseDeflect);
+	return this->query(inputString, bUseFlex, types, bUseDeflect);
 }
 
 
 
-SKWordListService::SKWordListService(char const* dataPath)
+SKERR SKWordListService::init(char const* dataPath)
 {
 	SKERR err;
 
 	SKFactoryGetRecordSet(dataPath, this->wordListTable, err);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to initial word list from " << dataPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to initial word list from %s .", dataPath);
+		return err;
+	}
 
 	skPtr<SKIFldCollection> fieldCollection;
 	err = this->wordListTable->GetFldCollection(fieldCollection.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the SKFldCollection of word list data from " << dataPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the SKFldCollection of word list data from %s .", dataPath);
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("LABEL", this->labelField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get LABEL field in word list data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get LABEL field in word list data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("MAJORKEY", this->majorKeyField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get MAJORKEY field in word list data.");
-
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get MAJORKEY field in word list data.");
+		return err;
+	}
+	return noErr;
 }
 
 
 
-PRUint32 SKWordListService::findWordListPosition(std::string const& sortKey)
+SKERR SKWordListService::findWordListPosition(std::string const& sortKey, PRUint32 * pos)
 {
 	SKERR err;
 	// Exact lookup
 	if (sortKey.empty())
-		return 0;
+	{
+		*pos = 0;
+		return noErr;
+	}
+
 	PRUint32 id = 0;
 	err = this->wordListTable->LookupText(sortKey.c_str(), skflmEXACT, &id);
 	if(err == noErr)
@@ -97,15 +112,22 @@ PRUint32 SKWordListService::findWordListPosition(std::string const& sortKey)
 		// Last before lookup
 		err = this->wordListTable->LookupText(sortKey.c_str(), skflmLASTBEFORE, &id);
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to lookup '" << sortKey.c_str() << "' last before word list data.");
+		{
+			SK_TRACE(SK_LOG_INFO, "Failed to lookup '%s' last before word list data.", sortKey.c_str());
+			return err;
+		}
 		if (id < this->getWordListCount() - 1) 
 		{
 			id += 1;
 		}
-		return id;
+		*pos = id;
+		return noErr;
 	}
 	else
-		THROW_RUNTIME_EXCEPTION( "Failed to lookup '" << sortKey.c_str() << "' in word list data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to lookup '%s' in word list data.", sortKey.c_str());
+		return err;
+	}
 
 
 	// Check if items above the current one have the same key
@@ -114,17 +136,24 @@ PRUint32 SKWordListService::findWordListPosition(std::string const& sortKey)
 		skPtr<SKIRecord> pRecord;
 		err = this->wordListTable->GetRecord(id - 1, pRecord.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get record whose id is " << (id - 1) << ".");
+		{
+			SK_TRACE(SK_LOG_INFO, "Failed to get record whose id is %d.", (id - 1));
+			return err;
+		}
 
 		skPtr<SKBinary> xiData;
 		err=  pRecord->GetDataFieldValue(this->majorKeyField, xiData.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get the majorKeyField of NO. " << (id - 1) << " record.");
+		{
+			SK_TRACE(SK_LOG_INFO, "Failed to get the majorKeyField of NO.%d record.", (id - 1));
+			return err;
+		}
 		std::string majorKey((char const*)xiData->GetSharedData());
 		if(majorKey != sortKey)
 			break;
 	}
-	return id;
+	*pos = id;
+	return noErr;
 }
 
 
@@ -138,36 +167,44 @@ PRUint32 SKWordListService::getWordListCount()
 
 
 
-WordListItem SKWordListService::getWordListItem(PRUint32 position)
+SKERR SKWordListService::getWordListItem(PRUint32 position, WordListItem * item)
 {
 	SKERR err;
 
 	skPtr<SKIRecord> pRecord;
 	err = this->wordListTable->GetRecord(position, pRecord.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get NO." << position << " word list data." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get NO.%d word list data.", position);
+		return err;
+	}
 
-	WordListItem item;
-	item.entryId = position;
+	item->entryId = position;
 
 	skPtr<SKBinary> labelValue;
 	err = pRecord->GetDataFieldValue(this->labelField, labelValue.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the label field of NO." << position << " index data." );
-	item.label = (char const*)labelValue->GetSharedData();
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the label field of NO.%d index data.", position);
+		return err;
+	}
+	item->label = (char const*)labelValue->GetSharedData();
 
 	skPtr<SKBinary> majorKeyValue;
 	err = pRecord->GetDataFieldValue(this->majorKeyField, majorKeyValue.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the majorKey field of NO." << position << " index data." );
-	item.majorKey = (char const*)majorKeyValue->GetSharedData();
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the majorKey field of NO.%d index data.", position);
+		return err;
+	}
+	item->majorKey = (char const*)majorKeyValue->GetSharedData();
 
-	return item;
+	return noErr;
 }
 
 
 
-SKIndexQueryService::SKIndexQueryService(char const* indexPath, char const* indexDataPath, char const* deflecIndexPath, char const* deflecTabPath)
+SKERR SKIndexQueryService::init(char const* indexPath, char const* indexDataPath, char const* deflecIndexPath, char const* deflecTabPath)
 {
 	SKERR err;
 
@@ -178,72 +215,112 @@ SKIndexQueryService::SKIndexQueryService(char const* indexPath, char const* inde
 
 	err = this->index->SetFileName(indexPath);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to initial index from " << indexPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to initial index from %s .", indexPath);
+		return err;
+	}
 
 	SKFactoryGetRecordSet(indexDataPath, this->indexData, err);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to initial index data from " << indexDataPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to initial index data from %s .", indexDataPath);
+		return err;
+	}
 
 	skPtr<SKIFldCollection> fieldCollection;
 	err = this->indexData->GetFldCollection(fieldCollection.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the SKFldCollection of index data from " << indexDataPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the SKFldCollection of index data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("ENTRYID", this->entryIdField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get ENTRYID field in index data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the ENTRYID field of index data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("TYPE", this->typeField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get TYPE field in index data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the TYPE field of index data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("CONTEXTID", this->contextIdField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get CONTEXTID field in index data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the CONTEXTID field of index data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("LABEL", this->labelField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get LABEL field in index data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the LABEL field of index data.");
+		return err;
+	}
 
 	err = fieldCollection->GetFieldByName("CLID", this->clidField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get CLID field in index data.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the CLID field of index data.");
+		return err;
+	}
 
 	*this->deflectIndex.already_AddRefed() = sk_CreateInstance(SKIndex)();
 
 	err = this->deflectIndex->SetFileName(deflecIndexPath);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to initial index from " << indexPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to initial deflect index from %s.", deflecIndexPath);
+		return err;
+	}
 
 	SKFactoryGetRecordSet(deflecTabPath, this->deflecTab, err);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to initial deflecTab from " << deflecTabPath );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to initial deflect table from %s.", deflecTabPath);
+		return err;
+	}
+	return noErr;
 }
 
 
 
-void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect)
+SKERR SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect)
 {
-	CTime begin, end;
-	CTimeSpan searchTime, getTime, countTime, filterTime, sortTime;
+	DWORD begin, end;
+	DWORD searchTime, getTime, countTime, filterTime, sortTime;
 
 	SKERR err;
 	skPtr<SKIndexResult> pIndexResult;
 	
-	begin = CTime::GetCurrentTime();
+	begin = ::GetTickCount();;
 	err = this->index->SearchExpression(input.c_str(), bUseFlex, this->simplifier, NULL, pIndexResult.already_AddRefed());
-	end = CTime::GetCurrentTime();
+	end = ::GetTickCount();;
 	searchTime = end - begin;
-	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION ( "Failed to query. queryString = " << input.c_str() << ", bUseFlex = " << bUseFlex) ;
+	if(err != noErr) 
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to query. error = %d, queryString = %s, bUseFlex = %d .", 
+			err, input.c_str(), bUseFlex);
+		return err;
+	}
+	SK_TRACE(SK_LOG_DEBUG, "SearchExpression '%s' in %d ms.", input.c_str(), searchTime);
 
-	begin = CTime::GetCurrentTime();
+	begin = ::GetTickCount();;
 	err = pIndexResult->GetDocumentList(this->searchResult.already_AddRefed());
-	end = CTime::GetCurrentTime();
+	end = ::GetTickCount();;
 	getTime = end - begin;
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION ( "Failed to get document list. queryString = " << input.c_str() << ", bUseFlex = " << bUseFlex) ;
-
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get document list. error = %d, queryString = %s, bUseFlex = %d .", 
+			err, input.c_str(), bUseFlex);
+		return err;
+	}
+	SK_TRACE(SK_LOG_DEBUG, "GetDocumentList '%s' in %d ms.", input.c_str(), getTime);
 
 	if (bUseDeflect) 
 	{
@@ -257,24 +334,58 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 				NULL, 
 				oDeflectResult.already_AddRefed());
 			if(err != noErr)
-				THROW_RUNTIME_EXCEPTION ( "Failed to query deflect index. queryString = " << input.c_str()) ;
+			{
+				SK_TRACE(SK_LOG_INFO, "Failed to query deflect index. queryString = %s .", input.c_str()) ;
+				return err;
+			}
 
 			skPtr<SKCursor> oDeflectedCursor;
 			err = oDeflectResult->GetDocumentList(oDeflectedCursor.already_AddRefed());
 			if(err != noErr)
-				THROW_RUNTIME_EXCEPTION ( "Failed to get deflected document list. queryString = " << input.c_str()) ;
-
+			{
+				SK_TRACE(SK_LOG_INFO, "Failed to query deflected document list. queryString = %s .", input.c_str()) ;
+				return err;
+			}
+				
 			PRUint32 count = 0;
 			err = oDeflectedCursor->GetCount(&count);
 			if(err != noErr)
-				THROW_RUNTIME_EXCEPTION ( "Failed to get the count of deflected document list. queryString = " << input.c_str()) ;
+			{
+				SK_TRACE(SK_LOG_INFO, "Failed to get the count of deflected document list. queryString = %s .", input.c_str()) ;
+				return err;
+			}
 			for (PRUint32 i = 0; i < count; i++) 
 			{
 				PRUint32 iPosition = 0;
-				oDeflectedCursor->GetElement(i, &iPosition);
-				skPtr<SKCursor> oComplCursor = GetCursorFromTable(this->deflecTab, iPosition, "r_clid", "clid");
-				oComplCursor = SortCursor(oComplCursor);
-				searchResult->Merge(oComplCursor, skfopOR);
+				err = oDeflectedCursor->GetElement(i, &iPosition);
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to get the %d element of deflected document list. queryString = %s .", 
+						i, input.c_str()) ;
+					return err;
+				}
+				skPtr<SKCursor> oComplCursor;
+				err = GetCursorFromTable(this->deflecTab, iPosition, "r_clid", "clid", oComplCursor.already_AddRefed());
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to GetCursorFromTable. queryString = %s .", input.c_str()) ;
+					return err;
+				}
+
+				skPtr<SKCursor> xiCursor;
+				err = SortCursor(oComplCursor, xiCursor.already_AddRefed());
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to SortCursor. queryString = %s .", input.c_str()) ;
+					return err;
+				}
+
+				err = searchResult->Merge(xiCursor, skfopOR);
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to merge. queryString = %s .", input.c_str()) ;
+					return err;
+				}
 			}
 		} 
 		else 
@@ -284,24 +395,49 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 			if(err != err_notfound)
 			{
 				if(err != noErr)
-					THROW_RUNTIME_EXCEPTION ( "Failed to lookup '" << input.c_str() << "' in  deflecTab.") ;
-				skPtr<SKCursor> xiDeflectCursor = GetCursorFromTable(this->deflecTab, pos, "r_clid", "clid");
-				xiDeflectCursor = SortCursor(xiDeflectCursor);
-				searchResult->Merge(xiDeflectCursor, skfopOR);
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to lookup '%s' in deflect table.", input.c_str()) ;
+					return err;
+				}
+				skPtr<SKCursor> xiDeflectCursor;
+				err = GetCursorFromTable(this->deflecTab, pos, "r_clid", "clid", xiDeflectCursor.already_AddRefed());
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to GetCursorFromTable. queryString = %s .", input.c_str()) ;
+					return err;
+				}
+
+				skPtr<SKCursor> xiSortedDeflectCursor;
+				err = SortCursor(xiDeflectCursor, xiSortedDeflectCursor.already_AddRefed());
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to SortCursor. queryString = %s .", input.c_str()) ;
+					return err;
+				}
+
+				err = searchResult->Merge(xiDeflectCursor, skfopOR);
+				if(err != noErr)
+				{
+					SK_TRACE(SK_LOG_INFO, "Failed to merge. queryString = %s .", input.c_str()) ;
+					return err;
+				}
 			}
 		}
 	}
 
 
 	PRUint32 count = 0;
-	begin = CTime::GetCurrentTime();
+	begin = ::GetTickCount();;
 	err = this->searchResult->GetCount(&count);
-	end = CTime::GetCurrentTime();
+	end = ::GetTickCount();;
 	countTime = end - begin;
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION ( "Failed to get the count of document list. queryString = " << input.c_str() << ", bUseFlex = " << bUseFlex) ;
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get the count of document list. queryString = %s .", input.c_str()) ;
+		return err;
+	}
 	if(0 == count)
-		return;
+		return noErr;
 
 	skPtr<SKRecordFilterUNumBitField> xiRFUN(new SKRecordFilterUNumBitField);
 	xiRFUN->SetDefaultPolicy (false);
@@ -319,18 +455,30 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 		if(0 != (0x01 & (types >> i)))
 			xiRFUN->AddAcceptedValue (i);
 	}
-	xiRFUN->SetRecordSet( this->indexData );
+	err = xiRFUN->SetRecordSet( this->indexData );
+	if(err != noErr)
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to SetRecordSet. queryString = %s .", input.c_str()) ;
+		return err;
+	}
 
 	skPtr<SKCursorFilterRecordWrapper> xiCursorFilter(new SKCursorFilterRecordWrapper);
-	xiCursorFilter->SetRecordFilter(xiRFUN, true);
+	err = xiCursorFilter->SetRecordFilter(xiRFUN, true);
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to SetRecordFilter. queryString = %s .", input.c_str()) ;
+		return err;
+	}
 
-	begin = CTime::GetCurrentTime();
+	begin = ::GetTickCount();;
 	err = this->searchResult->Filter(xiCursorFilter);
-	end = CTime::GetCurrentTime();
+	end = ::GetTickCount();;
 	filterTime = end - begin;
-
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION ( "Failed to filter result. queryString = " << input.c_str() << ", bUseFlex = " << bUseFlex) ;
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to filter result. queryString = %s .", input.c_str()) ;
+		return err;
+	}
+	SK_TRACE(SK_LOG_DEBUG, "Filter '%s' in %d ms.", input.c_str(), filterTime);
 
 	skPtr<SKRecordComparatorUNumField> xiComparator(new SKRecordComparatorUNumField);
 	xiComparator->SetField("TYPE");
@@ -348,15 +496,21 @@ void SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUin
 	skPtr<SKCursorComparatorRecordWrapper> xiCursorComparator(new SKCursorComparatorRecordWrapper);
 	xiCursorComparator->SetRecordComparator(xiRecordComparatorChain, true);
 
-	begin = CTime::GetCurrentTime();
+	begin = ::GetTickCount();;
 	err = this->searchResult->Sort(xiCursorComparator);
-	end = CTime::GetCurrentTime();
+	end = ::GetTickCount();;
 	sortTime = end - begin;
+	SK_TRACE(SK_LOG_DEBUG, "Sort '%s' in %d ms.", input.c_str(), sortTime);
 
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION ( "Failed to sort result. queryString = " << input.c_str() << ", bUseFlex = " << bUseFlex) ;
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to sort result. queryString = %s .", input.c_str()) ;
+		return err;
+	}
 
 	this->queryString = input;
+
+	return noErr;
 }
 
 
@@ -366,159 +520,222 @@ PRUint32 SKIndexQueryService::getResultCount()
 	PRUint32 count = 0;
 	SKERR err = this->searchResult->GetCount(&count);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the count of search result." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get result count.") ;
+		return err;
+	}
 	return count;
 }
 
 
 
-ResultItem SKIndexQueryService::getResultItem(PRUint32 position)
+ SKERR SKIndexQueryService::getResultItem(PRUint32 position, ResultItem * item)
 {
 	SKERR err = noErr;
 
 	PRUint32 element;
 	err = this->searchResult->GetElement(position, &element);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get NO." << position << " element." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get NO.%d element.", position) ;
+		return err;
+	}
 
 	skPtr<SKIRecord> pRecord;
 	err = this->indexData->GetRecord(element, pRecord.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get NO." << element << " index data." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get NO.%d index data.", element) ;
+		return err;
+	}
 
-	ResultItem result;
-
-	err = pRecord->GetUNumFieldValue(this->entryIdField, &result.entryId);
+	err = pRecord->GetUNumFieldValue(this->entryIdField, &(item->entryId));
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the entryId field of NO." << element << " index data." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to the entryId field of NO.%d index data.", element) ;
+		return err;
+	}
 
-	err = pRecord->GetUNumFieldValue(this->typeField, &result.type);
+	err = pRecord->GetUNumFieldValue(this->typeField, &(item->type));
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the type field of NO." << element << " index data." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to the type field of NO.%d index data.", element) ;
+		return err;
+	}
 
 	skPtr<SKBinary> contextIdValue;
 	err = pRecord->GetDataFieldValue(this->contextIdField, contextIdValue.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the contextId field of NO." << element << " index data." );
-	result.contextId = (char const*)contextIdValue->GetSharedData();
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to the contextId field of NO.%d index data.", element) ;
+		return err;
+	}
+	item->contextId = (char const*)contextIdValue->GetSharedData();
 
 	skPtr<SKBinary> labelValue;
 	err = pRecord->GetDataFieldValue(this->labelField, labelValue.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the label field of NO." << element << " index data." );
-	result.label = (char const*)labelValue->GetSharedData();
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to the label field of NO.%d index data.", element) ;
+		return err;
+	}
+	item->label = (char const*)labelValue->GetSharedData();
 
-	err = pRecord->GetUNumFieldValue(this->clidField, &result.clid);
+	err = pRecord->GetUNumFieldValue(this->clidField, &(item->clid));
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get the clid field of NO." << element << " index data." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to the clid field of NO.%d index data.", element) ;
+		return err;
+	}
 
-	return result;
+	return noErr;
 }
 
 
 
-skPtr<SKCursor> SKIndexQueryService::SortCursor(skPtr<SKCursor> const& pxiCursor)
+SKERR SKIndexQueryService::SortCursor(skPtr<SKCursor> const& pxiCursor, SKCursor ** xiCursor)
 {
 	SKERR err;
-	skPtr<SKCursor> xiCursor;
-	err = pxiCursor->Clone(xiCursor.already_AddRefed());
+	err = pxiCursor->Clone(xiCursor);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to clone cursor." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to clone cursor.") ;
+		return err;
+	}
 
-	err = xiCursor->Sort(NULL);
+	err = (*xiCursor)->Sort(NULL);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to sort cursor." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to sort cursor.") ;
+		return err;
+	}
 
-	return xiCursor;
+	return noErr;
 }
 
 
 
-skPtr<SKCursor> SKIndexQueryService::GetCursorFromTable(
+SKERR SKIndexQueryService::GetCursorFromTable(
 	skPtr<SKIRecordSet> const& pxTable, 
 	PRUint32 piPosition, 
 	std::string const& psLinkField,
-	std::string const& psField)
+	std::string const& psField,
+	SKCursor** pCursor)
 {
 	SKERR err;
 	skPtr<SKIRecord> pRecord;
 	err = pxTable->GetRecord(piPosition, pRecord.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get record whose position is " << piPosition << " ." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get record whose position is %d.", piPosition) ;
+		return err;
+	}
 
 	skPtr<SKIFldCollection> pFldCollection;
 	err = pxTable->GetFldCollection(pFldCollection.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get FldCollection." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get FldCollection.") ;
+		return err;
+	}
 
 	skPtr<SKIField> pField;
 	err = pFldCollection->GetFieldByName(psLinkField.c_str(), pField.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get filed whose name is " << psLinkField.c_str() << "." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get filed whose name is %s.", psLinkField.c_str()) ;
+		return err;
+	}
 
 	skPtr<SKIRecordSet> xiRs;
 	err=  pRecord->GetLinkFieldValue(pField, xiRs.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get LinkFieldValue." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get LinkFieldValue.") ;
+		return err;
+	}
 	
 	skPtr<SKIFldCollection> pRsFldCollection;
 	err=  xiRs->GetFldCollection(pRsFldCollection.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get FldCollection." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get FldCollection.") ;
+		return err;
+	}
 
 	skPtr<SKIField> xiField;
 	if (psField.empty())
 	{
 		err = pRsFldCollection->GetFieldByPosition(0, xiField.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get the first field." );
+		{
+			SK_TRACE(SK_LOG_INFO, "Failed to get the first field.") ;
+			return err;
+		}
 	}
 	else
 	{
 		err = pRsFldCollection->GetFieldByName(psField.c_str(), xiField.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get the field whose name is " << psField.c_str() << "." );
+		{
+			SK_TRACE(SK_LOG_INFO, "Failed to get the field whose name is %s.", psField.c_str()) ;
+			return err;
+		}
 	}
 	PRUint32 count = 0;
 	err = xiRs->GetCount(&count);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get count." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to get count.") ;
+		return err;
+	}
 
-	skPtr<SKCursor> pCursor;
-	err = xiRs->ExtractCursor(xiField, 0, count, pCursor.already_AddRefed());
+	err = xiRs->ExtractCursor(xiField, 0, count, pCursor);
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to extract cursor." );
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to extract cursor.") ;
+		return err;
+	}
 
-	return pCursor;
+	return noErr;
 }
 
 
 
-SKFileSystem * FileSystemService::prepare(std::string const& fileSystem)
+SKERR FileSystemService::prepare(std::string const& fileSystemPath, SKFileSystem ** fileSystem)
 {
-	FilesystemCache::const_iterator it = filesystemCache.find(fileSystem);
+	FilesystemCache::const_iterator it = filesystemCache.find(fileSystemPath);
 	if(filesystemCache.end() != it)
 	{
 		// already exist
-		return it->second;
+		*fileSystem = it->second;
+		return noErr;
 	}
 
 	SKFileSystem * pFileSystem = new SKFileSystem;
-	SKERR err = pFileSystem->SetFileName(fileSystem.c_str());
+	SKERR err = pFileSystem->SetFileName(fileSystemPath.c_str());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to load entry filesystem ('" << fileSystem.c_str() << "')." );
+	{
+		SK_TRACE(SK_LOG_INFO,  "Failed to load entry filesystem ('%s'). error = %d", 
+			fileSystemPath.c_str(), err);
+		return err;
+	}
 
-	this->filesystemCache.insert(FilesystemCache::value_type(fileSystem, pFileSystem));
-	return pFileSystem;
+	this->filesystemCache.insert(FilesystemCache::value_type(fileSystemPath, pFileSystem));
+	*fileSystem = pFileSystem;
+	return noErr;
 }
 
 
 
-void FileSystemService::getFileData(std::string const& fileSystem, std::string const& path, skPtr<SKBinary> & pData)
+SKERR FileSystemService::getFileData(std::string const& fileSystem, std::string const& path, skPtr<SKBinary> & pData)
 {
 	SKERR err = noErr;
 
-	SKFileSystem * pSKFileSystem = prepare(fileSystem);
+	SKFileSystem * pSKFileSystem = NULL;
+	err = prepare(fileSystem, &pSKFileSystem);
+	if(noErr != err)
+		return err;
 
 	skPtr<SKFSFile> pFile;
 	if(path.at(0) == '@')
@@ -527,16 +744,25 @@ void FileSystemService::getFileData(std::string const& fileSystem, std::string c
 		PRUint32 id = atoi(idString.c_str());
 
 		// get file by id
+		SK_TRACE(SK_LOG_DEBUG, "getFileData : get file by id (%d)", id);
 		err = pSKFileSystem->GetFile (id, pFile.already_AddRefed());
 		if(noErr != err)
-			THROW_RUNTIME_EXCEPTION( "Failed to get '" << path.c_str() << "' file in " << fileSystem.c_str() << " filesystem." );
+		{
+			SK_TRACE(SK_LOG_INFO,  "Failed to get '%s' file in '%s' file system. error = %d", 
+				path.c_str(), fileSystem.c_str(), err);
+			return err;
+		}
 	}
 	else
 	{
+		SK_TRACE(SK_LOG_DEBUG, "getFileData : get root dir");
 		skPtr<SKFSDirectory> pRootDir;
 		err = pSKFileSystem->GetRootDir(pRootDir.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get root directory" );
+		{
+			SK_TRACE(SK_LOG_INFO,  "Failed to get root directory. error = %d", err);
+			return err;
+		}
 
 		string::size_type pos = string::npos;
 		string::size_type offset = 0;
@@ -545,55 +771,88 @@ void FileSystemService::getFileData(std::string const& fileSystem, std::string c
 		for(pos = path.find('/', offset); pos != string::npos; offset = pos + 1, pos = path.find('/', offset))
 		{
 			string dirName = path.substr(offset, pos - offset);
+			SK_TRACE(SK_LOG_DEBUG, "getFileData : get dir (%s)", dirName.c_str());
 			err = pCurrentDir->GetDir(dirName.c_str(), pSubDir.already_AddRefed());
 			if(err != noErr)
-				THROW_RUNTIME_EXCEPTION( "Failed to get sub directory " << path.substr(0, pos).c_str());
+			{
+				SK_TRACE(SK_LOG_INFO,  "Failed to get the %s sub directory. error = %d", 
+					path.substr(0, pos).c_str(), err);
+				return err;
+			}
 			pCurrentDir = pSubDir;
 		}
 
 		string filename = path.substr(offset);
+		SK_TRACE(SK_LOG_DEBUG, "getFileData : get file (%s)", filename.c_str());
 		err = pCurrentDir->GetFile(filename.c_str(), pFile.already_AddRefed());
 		if(err != noErr)
-			THROW_RUNTIME_EXCEPTION( "Failed to get file " << path.c_str());
+		{
+			SK_TRACE(SK_LOG_INFO,  "Failed to get the %s file. error = %d", path.c_str(), err);
+			return err;
+		}
 	}
 
+	SK_TRACE(SK_LOG_DEBUG, "getFileData : get file data");
 	err = pFile->GetData(pData.already_AddRefed());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to get file data " << pFile->GetSharedPath() 
-			<< "/" << pFile->GetSharedName());
+	{
+		SK_TRACE(SK_LOG_INFO,  "Failed to get the file data (%s/%s). error = %d", 
+			pFile->GetSharedPath(), pFile->GetSharedName(), err);
+		return err;
+	}
+
+	return noErr;
 }
 
 
 
-void FileSystemService::getFileData(std::string const& fileSystem, std::string const& path, std::vector<uint8_t>& buffer)
+SKERR FileSystemService::getFileData(std::string const& fileSystem, std::string const& path, std::vector<uint8_t>& buffer)
 {
+	SKERR err = noErr;
+
 	skPtr<SKBinary> pData;
-	this->getFileData(fileSystem, path, pData);
+	err = this->getFileData(fileSystem, path, pData);
+	if(noErr != err)
+		return err;
 
 	uint8_t * data = (uint8_t *)pData->GetSharedData();
 	pData->GetSize();
 	std::copy(data, data + pData->GetSize(), std::back_inserter(buffer));
+	return noErr;
 }
 
 
 
-void FileSystemService::getTextFileData(std::string const& fileSystem, std::string const& path, std::string& buffer)
+SKERR FileSystemService::getTextFileData(std::string const& fileSystem, std::string const& path, std::string& buffer)
 {
+	SKERR err = noErr;
+
 	skPtr<SKBinary> pData;
-	this->getFileData(fileSystem, path, pData);
+	err = this->getFileData(fileSystem, path, pData);
+	if(noErr != err)
+		return err;
 
 	buffer = (char const*)pData->GetSharedData();
+	return noErr;
 }
 
 
 
-void FileSystemService::copyFile(std::string const& fileSystem, std::string const& path, std::string const& destPath)
+SKERR FileSystemService::copyFile(std::string const& fileSystem, std::string const& path, std::string const& destPath)
 {
+	SKERR err = noErr;
+
 	skPtr<SKBinary> pData;
-	this->getFileData(fileSystem, path, pData);
+	err = this->getFileData(fileSystem, path, pData);
+	if(noErr != err)
+		return err;
 
-	SKERR err = pData->WriteToFile(destPath.c_str());
+	err = pData->WriteToFile(destPath.c_str());
 	if(err != noErr)
-		THROW_RUNTIME_EXCEPTION( "Failed to copy '" << path.c_str() << "' to '" << destPath.c_str() << "'.");
+	{
+		SK_TRACE(SK_LOG_INFO, "Failed to copy %s' to '%s'.", path.c_str(), destPath.c_str());
+		return err;
+	}
 
+	return noErr;
 }

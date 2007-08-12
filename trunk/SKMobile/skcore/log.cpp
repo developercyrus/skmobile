@@ -30,7 +30,7 @@
 #include <nspr/plstr.h>
 #include <nspr/prlock.h>
 
-#include <time.h>
+#include <atltime.h>
 
 #include "machine.h"
 #include "error.h"
@@ -245,23 +245,20 @@ const char * skConsoleLog::getLogFile()
 
 void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const char * pszFormat, ...)
 {
-/*
-	time_t timer = time(NULL);
-	struct tm* localtimer = localtime(&timer);
+	CTime timer = CTime::GetCurrentTime();
 	char timeString[64] = {0};
-	sprintf(timeString, "%d-%d %d:%d:%d", 
-		(localtimer->tm_mon + 1),
-		localtimer->tm_mday,
-		localtimer->tm_hour,
-		localtimer->tm_min,
-		localtimer->tm_sec);
-*/	
+	sprintf(timeString, "%02d-%02d %02d:%02d:%02d", 
+		timer.GetMonth(),
+		timer.GetDay(),
+		timer.GetHour(),
+		timer.GetMinute(),
+		timer.GetSecond());
+	
 	if(isDebug)
 	{
 		if(m_isEnableDebug)
 		{
-			// Log("\n[%s] [DEBUG] [%s:%d] - ", timeString, file, line);
-			Log("\n[DEBUG] [%s:%d] - ", file, line);
+			Log("\n[%s] [DEBUG] [%s:%d] - ", timeString, file, line);
 			va_list argp;
 			va_start(argp, pszFormat);
 			vLog(pszFormat, argp);
@@ -270,7 +267,7 @@ void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const ch
 	}
 	else
 	{
-		Log("\n[INFO]  [%s:%d] - ", file, line);
+		Log("\n[%s] [INFO]  [%s:%d] - ", timeString, file, line);
 		va_list argp;
 		va_start(argp, pszFormat);
 		vLog(pszFormat, argp);
@@ -280,11 +277,20 @@ void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const ch
 
 void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const wchar_t * pszFormat, ...)
 {
+	CTime timer = CTime::GetCurrentTime();
+	char timeString[64] = {0};
+	sprintf(timeString, "%02d-%02d %02d:%02d:%02d", 
+		timer.GetMonth(),
+		timer.GetDay(),
+		timer.GetHour(),
+		timer.GetMinute(),
+		timer.GetSecond());
+
 	if(isDebug)
 	{
 		if(m_isEnableDebug)
 		{
-			Log("\n[DEBUG] [%s:%d] - ", file, line);
+			Log("\n[%s] [DEBUG] [%s:%d] - ", timeString, file, line);
 			va_list argp;
 			va_start(argp, pszFormat);
 			vLog(pszFormat, argp);
@@ -293,7 +299,7 @@ void skConsoleLog::trace(PRBool isDebug, const char* file, size_t line, const wc
 	}
 	else
 	{
-		Log("\n[INFO]  [%s:%d] - ", file, line);
+		Log("\n[%s] [INFO]  [%s:%d] - ", timeString, file, line);
 		va_list argp;
 		va_start(argp, pszFormat);
 

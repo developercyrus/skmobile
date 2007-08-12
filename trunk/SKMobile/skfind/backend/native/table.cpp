@@ -319,7 +319,14 @@ SKERR SKTable::LookupTextImp(const char* pszSearch, skfLookupMode mode,
             // load corresponding TDA page
             skPtr<SKPageFile> pTda;
             m_pSearchableField->GetFile(pTda.already_AddRefed());
-            pTda->Load(pPage->offset, pPage->size);
+            err = pTda->Load(pPage->offset, pPage->size);
+			if(err != noErr)
+			{
+				return SKError(err,
+					"[SKTable::LookupTextImp] "
+					"Failed to load corresponding TDA page. offset = %d, size = %d, win32Error = %d",
+					pPage->offset, pPage->size, ::GetLastError());
+			}
 
             // lookup in the page
             err = SubLookupText(m_pDatFile->GetBufferPtr(), lPhysicalPageSize,

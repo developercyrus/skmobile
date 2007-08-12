@@ -140,7 +140,8 @@ SKERR SKPageFileFragment::LoadFromFile(PRFileDesc *pFd,
             PR_Free(pBuffer);
         return SKError(err_skf_fseek,
                        "[SKPageFileFragment::LoadFromFile] "
-                        "Could not move internal file marker");
+					   "Could not move internal file marker. win32LastError = %d, pszFileName = %s", 
+					   ::GetLastError(), pszFileName);
     }
 
     // reads in the buffer
@@ -735,7 +736,9 @@ SKERR SKPageFile::Load(PRUint32 lOffset, PRUint32 lNeededSize,
     
     FileRelease();
     if(err != noErr)
-        return err;
+	{
+		return SKError(err, "[SKPageFile::Load] error = %d", err);
+	}
 
     return noErr;
 }
@@ -852,6 +855,10 @@ SKERR SKPageFile::LoadStaticRecord(PRUint32 lRecordNum, PRUint32 lRecordCount,
     // load buffer
     SKERR err = Load(lRecordNum * m_lRecordSize, lRecordCount * m_lRecordSize,
                 ppFragment);
+	if(err != noErr)
+		return SKError(err, "[SKPageFile::LoadStaticRecord] "
+		"Failed to load records in file %s", m_pszFileName);
+
     SK_ASSERT((*ppFragment)->Contains(lRecordNum * m_lRecordSize,
                                       lRecordCount * m_lRecordSize));
     return err;

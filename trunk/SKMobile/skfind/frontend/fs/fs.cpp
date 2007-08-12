@@ -289,7 +289,7 @@ SKERR SKFileSystem::GetDir(PRUint32 lIdx, SKFSDirectory** ppDir)
         return err;
 
     *ppDir = sk_CreateInstance(SKFSDirectory)(this, pRecord);
-    return (*ppDir == NULL);
+    return (*ppDir)->Init();
 }
 
 SKERR SKFileSystem::GetFile(PRUint32 lIdx, SKFSFile** ppFile)
@@ -301,7 +301,7 @@ SKERR SKFileSystem::GetFile(PRUint32 lIdx, SKFSFile** ppFile)
         return err;
 
     *ppFile = sk_CreateInstance(SKFSFile)(this, pRecord);
-    return (*ppFile == NULL);
+    return (*ppFile)->Init();
 }
 
 // -------------------------------------------------------------------------
@@ -408,19 +408,21 @@ SK_REFCOUNT_IMPL_CREATOR(SKFSDirectory)(SKFileSystem* pFileSystem,
 }
 SK_REFCOUNT_IMPL_IID(SKFSDirectory, SK_SKFSDIRECTORY_IID, SKFSObject)
 
-void SKFSDirectory::FetchInfo()
+SKERR SKFSDirectory::FetchInfo()
 {
     skPtr<SKBinary> pBinary;
     SKERR err = m_pRecord->GetDataFieldValue(m_pFileSystem->m_pDirNameField,
                                              pBinary.already_AddRefed());
     SK_ASSERT(err == noErr);
     if(err != noErr)
-        return;
+        return err;
     SK_ASSERT(NULL != pBinary);
     SK_ASSERT(NULL != pBinary->GetSharedData());
     m_pszName = PL_strdup((char*)pBinary->GetSharedData());
     SK_ASSERT(NULL != m_pszName);
     SK_ASSERT(m_pszName[pBinary->GetSize() - 1] == '\0');
+
+	return noErr;
 }
 
 SKERR SKFSDirectory::FetchParent()
@@ -749,19 +751,24 @@ SKERR SKFSFile::GetTitle(SKBinary** ppBinary)
                                         ppBinary);
 }
 
-void SKFSFile::FetchInfo()
+SKERR SKFSFile::FetchInfo()
 {
     skPtr<SKBinary> pBinary;
     SKERR err = m_pRecord->GetDataFieldValue(m_pFileSystem->m_pFileNameField,
                                              pBinary.already_AddRefed());
     SK_ASSERT(err == noErr);
     if(err != noErr)
-        return;
+	{
+		m_pszName = NULL;
+        return err;
+	}
     SK_ASSERT(NULL != pBinary);
     SK_ASSERT(NULL != pBinary->GetSharedData());
     m_pszName = PL_strdup((char*)pBinary->GetSharedData());
     SK_ASSERT(NULL != m_pszName);
     SK_ASSERT(m_pszName[pBinary->GetSize() - 1] == '\0');
+
+	return noErr;
 }
 
 SKERR SKFSFile::FetchParent()

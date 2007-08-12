@@ -130,6 +130,30 @@ public:
 		return 0;
 	}
 
+
+
+	bool AppHibernate(bool bHibernate)
+	{
+		SK_TRACE(SK_LOG_DEBUG, "AppHibernate(%d)", bHibernate);
+		return false;
+	}
+
+
+
+	bool AppNewInstance(LPCTSTR lpstrCmdLine)
+	{
+		SK_TRACE(SK_LOG_DEBUG, _T("AppNewInstance(%s)"), lpstrCmdLine);
+		return false;
+	}
+
+
+
+	void AppSave()
+	{
+		SK_TRACE(SK_LOG_DEBUG, "AppSave()");
+	}
+
+
 /*
 	void OnDestroy()
 	{

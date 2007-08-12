@@ -191,9 +191,10 @@ public:
     // configuration interface 
     SKFSDirectory(SKFileSystem* pFileSystem,
                   SKIRecord* pRecord) : SKFSObject(pFileSystem, pRecord)
-        { FetchInfo(); };
+        { };
     virtual ~SKFSDirectory() {};
 
+	SKERR			Init() { return FetchInfo(); }
     // user interface
             SKERR           GetDirCount(PRUint32 *plCount) const;
             SKERR           GetDir(PRUint32 lRank, SKFSDirectory** ppDir) const;
@@ -217,7 +218,7 @@ public:
     virtual PRPackedBool    SharedIsFile() const { return PR_FALSE; }
 
 protected:
-            void            FetchInfo();
+            SKERR           FetchInfo();
     virtual SKERR           FetchParent();
 private:
     // This is needed by the skPtr class for a dark reason. This
@@ -241,8 +242,10 @@ public:
 
     SKFSFile(SKFileSystem* pFileSystem,
              SKIRecord* pRecord) : SKFSObject(pFileSystem, pRecord)
-        { FetchInfo(); };
+        {};
     virtual ~SKFSFile() {};
+
+			SKERR			Init() { return FetchInfo(); }
 
     // user interface
             SKERR           GetData(SKBinary** ppBinary);
@@ -251,7 +254,7 @@ public:
     virtual PRPackedBool    SharedIsFile() const { return PR_TRUE; }
 
 protected:
-            void            FetchInfo();
+            SKERR           FetchInfo();
     virtual SKERR           FetchParent();
 private:
     // This is needed by the skPtr class for a dark reason. This
