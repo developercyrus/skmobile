@@ -11,6 +11,18 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
 
 
 = 变更日志 =
+  == 0.63版 2007/08/12 ==
+  * [http://code.google.com/p/skmobile/issues/detail?id=2 NO.2 Issue]  修正VGA/QVGA模式判断错误BUG。
+  * [http://code.google.com/p/skmobile/issues/detail?id=3 NO.3 Issue]  修正休眠或关机后查询导致程序退出的BUG。
+  * [http://code.google.com/p/skmobile/issues/detail?id=4 NO.4 Issue]  在配置文件中增加Word list延时的设置项。
+  * [http://code.google.com/p/skmobile/issues/detail?id=5 NO.5 Issue]  修正某些情况不能回退到历史页面的BUG。
+  * [http://code.google.com/p/skmobile/issues/detail?id=6 NO.6 Issue]  增加Button模拟导航键。
+  * [http://code.google.com/p/skmobile/issues/detail?id=7 NO.7 Issue]  QVGA模式下减少了图标的大小。
+  * [http://code.google.com/p/skmobile/issues/detail?id=8 NO.8 Issue]  修正了无法用导航键在input框移动的BUG。
+  * [http://code.google.com/p/skmobile/issues/detail?id=12 NO.12 Issue] 在配置文件中增加取词按钮横坐标的配置。
+  * [http://code.google.com/p/skmobile/issues/detail?id=13 NO.13 Issue] 在配置文件中增加取词快捷键的配置。
+  * [http://code.google.com/p/skmobile/issues/detail?id=14 NO.14 Issue] 在debug日志中增加了时间信息。
+  * [http://code.google.com/p/skmobile/issues/detail?id=15 NO.15 Issue] 修正了横屏时画面显示不完整的BUG。
   == 0.62版 2007/08/01 ==
   * 修正页面编码问题，现在不依赖PIE的设置。
   * 在QVGA模式下使用32*32的大icon作为取词按钮；在VGA模式下仍使用原来的16*16的小icon
@@ -64,6 +76,14 @@ Cald2Mobile目前的配置全部位于sk.ini文件中。
     缺省为当前目录，用户无需修改。设置词典数据的路径。如果词典数据在“\SD\Program Files\Cald2Mobile\data”目录下的话，这里就应该设置“/SD/Program Files/Cald2Mobile”。可以用“;”分割，设置多个目录。
   * SK_LOG_FILE
     缺省为当前目录下“sk.log”文件，用户无需修改。设置日志文件的路径。
+  * SK_LOG_DEBUG
+    是否日志中记录debug信息。缺省为0，不计录。
+  * MYSK_PICK_BUTTON_POSITION
+    取词按钮横坐标。缺省为0，表示居中。
+  * MYSK_PICK_BUTTON_APP_KEY
+    取词快捷键。缺省为0，表示不设置快捷键。其他可选值[1-6]分别对应VK_APP1～VK_APP6。
+  * MYSK_WORDLIST_DELAY
+    wordlist更新延时。单位为ms。缺省为2000，2s没有用户输入时更新wordlist页面。
   * MYSK_WORDLIST_PAGE_SIZE
     缺省为15，在VGA模式下InputPannel出现时无需翻页。Cald2Mobile的wordlist页中使用分页显示。该设置项设置每页显示的词条数。
   * MYSK_RESULTS_PAGE_SIZE
@@ -157,3 +177,4 @@ Cald2Mobile的缺点：
     Cald2Mobile目前仅支持CALD2。这是优点同时也是缺点。不过基于CALD2相同的IDM SK技术的词典还有LDOCE2和OALD7。而且通过SkProd，用户也可以自己制作词典。MDict拥用丰富的词典资源，而且支持从更丰富的StarDict之间的转换。
   * 性能相比MDict差
     Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+
