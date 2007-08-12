@@ -88,18 +88,23 @@ CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Cald2Mobile v0.62",IDC_STATIC,38,10,70,8,SS_NOPREFIX
+    LTEXT           "Cald2Mobile v0.63",IDC_STATIC,38,10,70,8,SS_NOPREFIX
     LTEXT           "License: GPL 2.0",IDC_STATIC,38,25,70,8
 END
 
-IDD_SKMOBILE_FORM DIALOG  0, 0, 120, 150
-STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+IDD_SKMOBILE_FORM DIALOG  0, 0, 120, 100
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+FONT 8, "Tahoma"
 BEGIN
-    EDITTEXT        IDC_INPUT,0,0,90,10,ES_AUTOHSCROLL
-    PUSHBUTTON      "?",IDC_LOOKUP,90,0,10,10,NOT WS_TABSTOP
+    EDITTEXT        IDC_INPUT,0,0,50,10,ES_AUTOHSCROLL
+    PUSHBUTTON      "?",IDC_LOOKUP,50,0,10,10,NOT WS_TABSTOP
+    PUSHBUTTON      "^",IDC_UP,60,0,10,10,NOT WS_TABSTOP
+    PUSHBUTTON      "v",IDC_DOWN,70,0,10,10,NOT WS_TABSTOP
+    PUSHBUTTON      "<",IDC_LEFT,80,0,10,10,NOT WS_TABSTOP
+    PUSHBUTTON      ">",IDC_RIGHT,90,0,10,10,NOT WS_TABSTOP
     PUSHBUTTON      "M",IDC_TYPES,100,0,10,10,NOT WS_TABSTOP
     PUSHBUTTON      "X",IDC_CLOSE_TAB,110,0,10,10,NOT WS_TABSTOP
-    LTEXT           "Static",IDC_CONTENT,0,10,120,140
+    LTEXT           "Static",IDC_CONTENT,0,10,120,90
 END
 
 
@@ -151,8 +156,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 0,0,6,3
+ PRODUCTVERSION 0,0,6,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -165,15 +170,17 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
+            VALUE "Comments", "http://code.google.com/p/skmobile"
+            VALUE "CompanyName", "skmobile"
             VALUE "FileDescription", "Cald2Mobile Module"
-            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "FileVersion", "0, 0, 6, 3"
             VALUE "InternalName", "Cald2Mobile"
             VALUE "LegalCopyright", "Copyright 2007"
             VALUE "OriginalFilename", "Cald2Mobile.exe"
             VALUE "ProductName", "Cald2Mobile Module"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "ProductVersion", "0, 0, 6, 3"
         END
     END
     BLOCK "VarFileInfo"
@@ -191,7 +198,6 @@ END
 STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "Cald2Mobile"
-    IDS_VERSION             "0.62"
 END
 
 STRINGTABLE 

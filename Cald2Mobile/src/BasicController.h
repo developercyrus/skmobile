@@ -333,16 +333,6 @@ public :
 
 
 
-	virtual LRESULT OnLookup(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
-	{
-		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnLookup");
-
-		doLookup();
-		return S_OK;
-	}
-
-
-
 	virtual BOOL OnReturnKey(UINT nRepCnt, UINT nFlags)
 	{
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnReturnKey");
@@ -385,6 +375,35 @@ public :
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnRightKey");
 
 		return FALSE;
+	}
+
+
+
+	virtual LRESULT OnSimulateKey(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+	{
+		::SetFocus(m_view->m_wndHtmlViewer);
+		BYTE bVk = VK_RIGHT;
+		switch(wID)
+		{
+		case IDC_UP:
+			bVk = VK_UP;
+			break;
+		case IDC_DOWN:
+			bVk = VK_DOWN;
+			break;
+		case IDC_LEFT:
+			bVk = VK_LEFT;
+			break;
+		case IDC_RIGHT:
+			bVk = VK_RIGHT;
+			break;
+		case IDC_LOOKUP:
+			bVk = VK_RETURN;
+			break;
+		}
+		keybd_event(bVk, 0, KEYEVENTF_SILENT, 0);
+		keybd_event(bVk, 0, KEYEVENTF_SILENT | KEYEVENTF_KEYUP, 0);
+		return S_OK;
 	}
 
 
