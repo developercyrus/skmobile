@@ -14,10 +14,12 @@
 #define IDC_INPUT                       1000
 #define IDC_LOOKUP                      1001
 #define IDC_CONTENT                     1002
-#define IDC_COMBO1                      1003
-#define IDC_CLOSE_TAB                   1004
-#define IDC_TYPES                       1005
-#define IDC_EDIT1                       1006
+#define IDC_CLOSE_TAB                   1003
+#define IDC_TYPES                       1004
+#define IDC_LEFT                        1005
+#define IDC_RIGHT                       1006
+#define IDC_UP                          1007
+#define IDC_DOWN                        1008
 #define ID_BACK_LAST_APP                32772
 #define ID_SAVE_CURRENT_CONTENT         32773
 #define ID_MENU_SAVECONTENTTABXML       32774

@@ -38,8 +38,6 @@ public :
 
 	virtual LRESULT OnHotspot(int idCtrl, LPNMHDR pnmh, BOOL& bHandled) = 0;
 
-	virtual LRESULT OnLookup(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) = 0;
-
 	virtual LRESULT OnAction(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) = 0;
 
 	virtual LRESULT OnCloseTab(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) = 0;
@@ -55,6 +53,8 @@ public :
 	virtual BOOL OnLeftKey(UINT nRepCnt, UINT nFlags) = 0;
 
 	virtual BOOL OnRightKey(UINT nRepCnt, UINT nFlags) = 0;
+
+	virtual LRESULT OnSimulateKey(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) = 0;
 
 };
 
