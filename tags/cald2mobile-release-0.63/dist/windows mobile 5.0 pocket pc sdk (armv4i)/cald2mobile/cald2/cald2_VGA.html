@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+		<link rel="stylesheet" type="text/css" href="entry_VGA.css"/>
+		<link rel="stylesheet" type="text/css" href="cle.css"/> 
+		<link rel="stylesheet" type="text/css" href="colpanel.css"/>
+		<link rel="stylesheet" type="text/css" href="vforms.css"/> 
+		<link rel="stylesheet" type="text/css" href="wfamily.css"/> 
+		<script>
+			var isEnableDebug = false;
+			
+			var tabs = ["Tab0", "Tab1", "Tab2", "Tab3", "Tab4", "Tab5", "Tab6", "Tab7", "Tab8", "Tab9"];
+			function selectTab(tabIndex) {
+				for (index=0; index < tabs.length; index++ ) {
+					var tabId = tabs[index];
+					var tab = document.all[tabId];
+					if(index == tabIndex) {
+						tab.style.display = "block";
+					} else {
+						tab.style.display = "none";
+					}
+				}
+			}
+			
+			function getTabContent(tabIndex) { 
+				  var tabId = tabs[tabIndex];
+					var tab = document.all[tabId];
+					return tab.innerHTML;
+			}
+			
+			function setTabContent(tabIndex, tabContent) { 
+				  var tabId = tabs[tabIndex];
+					var tab = document.all[tabId];
+					tab.innerHTML = tabContent;
+					selectTab(tabIndex);
+			}
+			
+			function setContentHtml(tabIndex, contentHtml) {
+				setTabContent(tabIndex, contentHtml);
+			}				
+
+			var contentXslDoc = new ActiveXObject("Msxml2.DOMDocument");
+			function setContentXsl(contentXslPath) {
+		    try {
+		    	// alert(contentXslPath);
+					contentXslDoc.loadXML(contentXslPath);
+		    } 
+		    catch(ex) { 
+		      alert(ex.number+"\n"+ex.description); 
+		    } 				
+			}
+
+			function setContentXml(tabIndex, contentXml) {
+				var contentHtml;
+	          try {  
+		            var xmldoc = new ActiveXObject("Msxml2.DOMDocument");
+		            xmldoc.loadXML(contentXml);
+		            contentHtml = xmldoc.transformNode(contentXslDoc.documentElement);
+		            setTabContent(tabIndex, contentHtml);
+		        } 
+		        catch(ex) { 
+                    alert(ex.number+"\n"+ex.description); 
+		        } 				
+	     	    if(isEnableDebug ) { 
+	     		    var debugTab = document.getElementById('debugTab');
+			        debugTab.style.display = "block";
+			        var debug = document.getElementById('debug');
+			        debug.value = contentXml;
+			        debug.value += "\r\n\r\n" + contentHtml;
+	     	    }
+			}
+
+			function setContentXmlWithXsl(tabIndex, contentXml, contentXslPath) {
+		    try {
+					var xmldoc = new ActiveXObject("Msxml2.DOMDocument");
+					xmldoc.loadXML(contentXml);
+					var tempContentXslDoc = new ActiveXObject("Msxml2.XSLTemplate");
+					tempContentXslDoc.async = false;
+					tempContentXslDoc.load(contentXslPath);
+					var contentHtml = xmldoc.transformNode(tempContentXslDoc.documentElement);
+					setTabContent(tabIndex, contentHtml);
+		    } 
+		    catch(ex) { 
+		      alert(ex.number+"\n"+ex.description); 
+		    } 				
+			}
+
+			var currentPlay;
+			function playSound(destUrl) {
+				MediaPlayer.settings.autoStart="true";
+				currentPlay = destUrl;
+				MediaPlayer.URL=destUrl;
+			}
+			
+			var isHandlingCommand = false;
+			function sendCommand(command, params) {
+				if(isHandlingCommand) {
+					alert("Other command is handling, ignore the command!");
+					return;
+				}
+				isHandlingCommand = true;
+				
+				try {
+					commandForm.action="skshell://" + command;
+					
+					var paramElements = commandForm.elements;
+					if(params.length > paramElements.length)
+						alert("Too many parameters.");
+					var index = 0;				
+					for(; index < params.length; index++) {
+						paramElements[index].disabled=false;
+						paramElements[index].value=params[index];
+					}
+					for(; index < paramElements.length; index++) {
+						paramElements[index].disabled=true;
+					}
+	
+					commandForm.submit();
+				} catch(ex) { 
+		      alert(ex.number+"\n"+ex.description); 
+		    }
+		    isHandlingCommand = false;
+			}
+
+			function selectAnchor(anchor) {
+			    var link = document.links[anchor];
+			    // link.style.backgroundColor = "yellow";
+			    link.focus();
+			}
+			
+      function GetWordListSortKey(pString) {
+          var Lexsort = new Array(
+         [ "A", "a", "", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�" ],
+         [ "B", "b" ],
+         [ "C", "c", "�", "�" ],
+         [ "D", "d", "�", "�" ],
+         [ "E", "e", "�", "�", "�", "�", "�", "�", "�", "�" ],
+         [ "F", "f" ],
+         [ "G", "g" ],
+         [ "H", "h" ],
+         [ "I", "i", "�", "�", "�", "�", "�", "�", "�", "�" ],
+         [ "J", "j" ],
+         [ "K", "k" ],
+         [ "L", "l" ],
+         [ "M", "m" ],
+         [ "N", "n", "�", "�" ],
+         [ "O", "o", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�" ],
+         [ "P", "p" ],
+         [ "Q", "q" ],
+         [ "R", "r" ],
+         [ "S", "s", "�" ],
+         [ "T", "t", "�", "�" ],
+         [ "U", "u", "�", "�", "�", "�", "�", "�", "�", "�" ],
+         [ "V", "v" ],
+         [ "W", "w" ],
+         [ "X", "x" ],
+         [ "Y", "y", "�", "�", "�" ],
+         [ "Z", "z" ],
+         [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+			    );
+			    var Characters = "";
+			    var Transliterate = new Array();
+			    for (var i = 0; i < Lexsort.length; i++) {
+			        for (var j = 0; j < Lexsort[i].length; j++) {
+			            Characters += Lexsort[i][j];
+			            Transliterate[Lexsort[i][j]] = String.fromCharCode(i + 0x21);
+			        }
+			    }
+			    var EraseRegExp = new RegExp("[^" + Characters + "]", "gi");
+			    var TransliterateRegExp = new RegExp("[" + Characters + "]", "gi");
+			
+			    // BIG HACK
+			    // For positionning, we transform some symbols to their textual equivalent
+			    pString = pString.replace(/^\s*%\s*$/, "percent");
+			    pString = pString.replace(/^\s*3-?[dD]\s*$/, "three-d");
+			    pString = pString.replace(/^\s*24\/7\s*$/, "twentyfourseven");
+			
+			    SortKey = pString.replace(EraseRegExp, "");
+			    SortKey = SortKey.replace(TransliterateRegExp, function tr(match) { return Transliterate[match]; } );
+			    return SortKey;
+			}
+
+		</script>
+		<script language="javascript" event="Error()" for="MediaPlayer">
+			alert(MediaPlayer.ErrorDescription);
+		</script>
+		<script for="MediaPlayer" event="PlayStateChange(lNewState)" language="JScript">
+			var stateNames=["Undefined", "Stopped", "Paused", "Playing", "ScanForward", "ScanReverse", "Buffering", "Waiting", "MediaEnded", "Transitioning", "Ready", "Reconnecting"];
+			if(8 == lNewState) {
+				var soundPath = currentPlay;
+				// release resource
+				currentPlay = "";
+				MediaPlayer.close();
+
+				// send command
+				sendCommand("playSoundEnded", [soundPath]);
+		  }
+		</script>			
+	</head>
+	<body>
+		<form id="commandForm" method="post" action="">
+			<input type="hidden" name="param0" />
+			<input type="hidden" name="param1" />
+			<input type="hidden" name="param2" />
+			<input type="hidden" name="param3" />
+			<input type="hidden" name="param4" />
+			<input type="hidden" name="param5" />
+			<input type="hidden" name="param6" />
+			<input type="hidden" name="param7" />
+			<input type="hidden" name="param8" />
+			<input type="hidden" name="param9" />
+		</form>
+			
+		<form>
+			<div id="Tab0" style="width:100%;height:100%;display:none;">
+				<p>Tab0</p>
+				<input type="button"
+ value="callTester" onclick="callTester()" />
+  		</div>
+			<div id="Tab1" 	style="width:100%;height:100%;display:none;">
+				<p>Tab1</p>
+			</div>
+			<div id="Tab2" style="width:100%;height:100%;display:none;">
+				<p>Tab2</p>
+			</div>
+			<div id="Tab3" style="width:100%;height:100%;display:none;">
+				<p>Tab3</p>
+			</div>
+			<div id="Tab4" style="width:100%;height:100%;display:none;">
+				<p>Tab4</p>
+			</div>
+			<div id="Tab5" style="width:100%;height:100%;display:none;">
+				<p>Tab5</p>
+			</div>
+			<div id="Tab6" style="width:100%;height:100%;display:none;">
+				<p>Tab6</p>
+			</div>
+			<div id="Tab7" style="width:100%;height:100%;display:none;">
+				<p>Tab7</p>
+			</div>
+			<div id="Tab8" style="width:100%;height:100%;display:none;">
+				<p>Tab8</p>
+			</div>
+			<div id="Tab9" style="width:100%;height:100%;display:none;">
+				<p>Tab9</p>
+			</div>
+			<div id="debugTab" style="width:100%;height:100%;display:none;">
+				<textarea id="debug" readOnly="true" cols="80" rows="24">
+				</textarea >
+			</div>
+		</form>
+		<div id="Hidden" 		style="width:0%;height:0%;display:none;">			
+			<object 
+		  	id="MediaPlayer" 
+		 		classid="CLSID:6BF52A52-394A-11D3-B153-00C04F79FAA6" 
+		 		type="application/x-oleobject"
+		 		uimode="none">
+	   	</object>
+		</div>
+	</body>
+</html>

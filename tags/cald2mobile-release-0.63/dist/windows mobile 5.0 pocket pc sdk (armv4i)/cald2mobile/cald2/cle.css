@@ -1,0 +1,85 @@
+.gloss {
+	font-style : normal;
+}
+
+.underline {
+	text-decoration : underline;
+}
+
+  BODY  {color : black;
+    background-color : white;
+  	font-family : "Verdana, Arial, Helvetica, sans-serif";
+	font-size : 12pt;
+	font-weight : normal;
+    -moz-binding: url('chrome://cald2/content/xbl/contentHtmlList.xml#EntryContentLookup');
+}
+  TD 	{
+	border-bottom : White;
+	border-left : White;
+	border-right : White;
+	border-top : White;
+}
+
+a {
+	text-decoration:none;
+}
+
+.titl {
+	font-family : Arial, Helvetica, sans-seriff;
+	font-weight : normal;
+	font-size : 14pt;
+	text-decoration : none;
+	color: #FF0000;
+}
+
+span.titl {
+	display : block;
+	text-align : center;
+}
+
+.text {
+	font-weight : normal;
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	text-align : justify;
+	font-size : 10pt;
+	text-decoration : none;
+	color: #0033FF;
+}
+
+span.text {
+	display : block;
+	margin-left : 8px;
+	margin-top : 3px;
+	margin-right : 8px;
+	margin-bottom : 3px;
+}
+
+.eg {
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	font-weight : normal;
+	font-style : italic;
+	font-size : 9pt;
+	text-decoration : none;
+	color: black;
+}
+
+span.eg {
+	display : block;
+	text-indent : 8px;
+	margin-left : 8px;
+}
+
+.xeg {
+	font-family : Verdana, Arial, Helvetica, sans-serif;
+	font-weight : normal;
+	font-style : italic;
+	text-decoration : line-through;
+	font-size : 9pt;
+	color: black;
+}
+
+span.xeg {
+	display : block;
+	text-indent : 8px;
+	margin-left : 8px;
+}

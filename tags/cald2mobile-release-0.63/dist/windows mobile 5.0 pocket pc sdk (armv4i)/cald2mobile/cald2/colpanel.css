@@ -1,0 +1,212 @@
+body, p {
+  color : black;
+  background-color : white;
+  font-family : Verdana, Arial, Helvetica, sans-serif;
+	font-size : 12pt;
+	font-weight : normal;
+}
+
+body {
+  -moz-binding: url('chrome://cald2/content/xbl/contentHtmlList.xml#EntryContentLookup');
+}
+
+a {
+	text-decoration : none;
+	display : inline;
+	margin-bottom : 0px;
+	margin-left : 0px;
+	margin-right : 0px;
+	margin-top : 0px;
+	color: black;
+}
+
+.cdai_annotation {
+  color: red;
+  margin-left: 0.5em;
+}
+
+.cdai_deleted {
+  color: gray;
+  text-decoration: line-through;
+}
+
+.cdai_emph, 
+.cdai_idiom, 
+.cdai_sensenum, 
+.cdai_syn, 
+.cdai_v, 
+.cdai_x {
+  font-weight: bold;
+}
+
+.cdai_entry {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size : 10pt;
+	margin-top: 1em;
+}
+
+div.cdai_example {
+	font-style: italic;
+	margin-left: 2.00em;
+	color : Black;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size : 8pt;
+}
+
+a.cdai_example {
+	font-style: italic;
+	color : Black;
+	font-family: Times new Roman, serif;
+	font-size : 12pt;
+}
+
+.cdai_freq {
+  color: purple;
+  margin-left: 0.5em;
+}
+
+.cdai_gloss {
+  font-style: normal;
+  font-weight: normal;
+}
+
+.cdai_headword {
+  font-family:  Verdana, Arial, Helvetica, sans-serif;
+  font-size : 12pt;
+  font-weight: bold;
+}
+
+.cdai_idb {
+  margin-top: 0.25em;
+  margin-left: 0.5em;
+}
+
+.cdai_label, 
+.cdai_leadin, 
+.cdai_usageexample {
+  font-style: italic;
+}
+
+.cdai_note, 
+.cdai_sense, 
+.cdai_xref {
+  margin-left: 0.5em;
+}
+
+.cdai_xref_runin {
+  display: inline;
+}
+
+.cdai_noteleadin {
+  font-variant: small-caps;
+}
+
+.cdai_obj {
+  font-style: italic;
+  font-weight: normal;
+}
+
+.cdai_suppressed {
+  color: gray;
+}
+
+.cdai_url {
+  color:green;
+  font-size: xx-small;
+}
+
+.cdai_xsense {
+  font-weight: normal;
+}
+
+.cdai_caption {
+  text-align: center;
+}
+
+
+.collpanels_heading {
+	font-family :  Verdana, Arial, Helvetica, sans-serif;
+	font-size : 14pt;
+	font-weight : bold;
+	color : Blue;
+}
+
+.collpanels_headword {
+	display: inline;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size : 12pt;
+	font-weight: bold;
+	margin-top: 0.25em;
+	margin-bottom: 0em;
+}
+
+.collpanels_pubid {
+  display: inline;
+  margin-left: 1em;
+  font-size: 0.8em;
+  color:blue;
+}
+
+.collpanels_sense {
+	display: block;
+	margin-left: 0.5em;
+	margin-top : 8px;
+}
+
+.collpanels_gw {
+	display: inline;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size : 12pt;
+	font-style: normal;
+	border : thin solid Black;
+	text-transform : uppercase;
+	color : Black;
+	font-weight : bold;
+}
+
+.collpanels_def {
+	display: inline;
+	margin-left: 0.5em;
+}
+
+.collpanels_cathead {
+	display: block;
+	margin-top: 0.75em;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size : 12pt;
+	font-weight: bold;
+	color : Red;
+}
+
+span.collpanels_cg {
+	display: block;
+	margin-left : 0.75em;
+	color : Blue;
+}
+
+a.collpanels_cg {
+	color: Blue;
+}
+
+}
+.collpanels_c {
+	display: inline;
+	font-family:  Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size : 10pt;
+	color : Blue;
+}
+
+.collpanels_specobj {
+  display: inline;
+  font-style: normal;
+}
+
+.collpanels_xc {
+	font-weight : normal;
+	color : Blue;
+}
+
+.collpanels_label {
+	color : #FF0000;
+}
