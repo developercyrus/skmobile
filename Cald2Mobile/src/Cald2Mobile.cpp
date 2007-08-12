@@ -17,11 +17,11 @@
 #include "resource.h"
 
 #include <fstream>
+#include <sstream>
 #include <iomanip>
-#include "unicode.h"
+// #include "unicode.h"
 #include <atlfile.h>
 using namespace std;
-using namespace mysk;
 
 #include "DictionaryService.h"
 #include "Script.h"
@@ -37,6 +37,7 @@ using namespace mysk;
 #include "BasicController.h"
 #include "Cald2Controller.h"
 
+using namespace mysk;
 
 CAppModule _Module;
 CAtlString _RootPath;
@@ -92,16 +93,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	int nRet = 0;
-	try
-	{
-		nRet = CMainFrame::AppRun(lpstrCmdLine, nCmdShow);
-	}
-	catch (truntime_error& e)
-	{
-		SK_TRACE(SK_LOG_INFO, _T("Catch an exception. error=%s"), 
-			e.errorMsg().c_str());
-	}
+	int nRet = CMainFrame::AppRun(lpstrCmdLine, nCmdShow);
 
 	_Module.Term();
 	::CoUninitialize();

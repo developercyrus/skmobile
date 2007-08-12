@@ -236,48 +236,42 @@ public :
 		CAtlString szHREFText = pnmHTMLView->szTarget;
 		CAtlString szPostData = pnmHTMLView->szData;
 		SK_TRACE(SK_LOG_DEBUG, _T("szHREFText = %s, szPostData = %s"), szHREFText, szPostData);
-		try
+
+		if(szHREFText.Left(10) == _T("skshell://"))
 		{
-			if(szHREFText.Left(10) == _T("skshell://"))
+			CAtlString command = szHREFText.Mid(10);
+
+			CSimpleArray<CAtlString> params;
+			TCHAR unescapePostDataBuf[2048] = {0};
+			DWORD unescapePostDataLength = 0;
+			int curPos= 0;
+			CAtlString key  = szPostData.Tokenize(_T("="),curPos);
+			CAtlString value;
+			while (-1 != curPos)
 			{
-				CAtlString command = szHREFText.Mid(10);
+				value= szPostData.Tokenize(_T("&"),curPos);
+				AtlUnescapeUrl(
+					value, 
+					unescapePostDataBuf, 
+					&unescapePostDataLength, 
+					sizeof unescapePostDataBuf / sizeof TCHAR);
+				value = CAtlString(unescapePostDataBuf, unescapePostDataLength);
+				// the 'AtlUnescapeUrl' cann't translate '+' to 'space'
+				value.Replace(_T('+'), _T(' '));
 
-				CSimpleArray<CAtlString> params;
-				TCHAR unescapePostDataBuf[2048] = {0};
-				DWORD unescapePostDataLength = 0;
-				int curPos= 0;
-				CAtlString key  = szPostData.Tokenize(_T("="),curPos);
-				CAtlString value;
-				while (-1 != curPos)
-				{
-					value= szPostData.Tokenize(_T("&"),curPos);
-					AtlUnescapeUrl(
-						value, 
-						unescapePostDataBuf, 
-						&unescapePostDataLength, 
-						sizeof unescapePostDataBuf / sizeof TCHAR);
-					value = CAtlString(unescapePostDataBuf, unescapePostDataLength);
-					// the 'AtlUnescapeUrl' cann't translate '+' to 'space'
-					value.Replace(_T('+'), _T(' '));
+				params.Add(value);
 
-					params.Add(value);
+				key  = szPostData.Tokenize(_T("="),curPos);
+			};
 
-					key  = szPostData.Tokenize(_T("="),curPos);
-				};
-
-				this->handleCommand(command, params);
-				// disable default handle
-				m_isHandlingHotspot = FALSE;
-				PR_Unlock(m_hotspotLock);
-				SK_TRACE(SK_LOG_DEBUG, _T("set m_isHandlingHotspot = FALSE "));
-				return 1;
-			}
+			this->handleCommand(command, params);
+			// disable default handle
+			m_isHandlingHotspot = FALSE;
+			PR_Unlock(m_hotspotLock);
+			SK_TRACE(SK_LOG_DEBUG, _T("set m_isHandlingHotspot = FALSE "));
+			return 1;
 		}
-		catch (truntime_error& e)
-		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to handle OnHotspot Event. href = %s, postData = %s, cause = %s"),
-				(TCHAR const*)szHREFText, (TCHAR const*)szPostData, e.errorMsg().c_str());
-		}
+
 		m_isHandlingHotspot = FALSE;
 		PR_Unlock(m_hotspotLock);
 		SK_TRACE(SK_LOG_DEBUG, _T("set m_isHandlingHotspot = FALSE "));

@@ -145,9 +145,9 @@
 				ExecutionBucket="7"
 				Optimization="0"
 				AdditionalIncludeDirectories="E:\usr\lib\WTL80\include;&quot;$(SolutionDir)/SKMobile&quot;"
-				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);UNDER_CE=$(CEVER);WINCE;_DEBUG;$(PLATFORMDEFINES);$(ARCHFAM);$(_ARCHFAM_);_UNICODE;_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);UNDER_CE=$(CEVER);WINCE;_DEBUG;$(PLATFORMDEFINES);$(ARCHFAM);$(_ARCHFAM_);_UNICODE;_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_HAS_EXCEPTIONS=0"
 				MinimalRebuild="true"
-				ExceptionHandling="1"
+				ExceptionHandling="0"
 				RuntimeLibrary="1"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -313,7 +313,8 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="E:\usr\lib\WTL80\include;&quot;$(SolutionDir)/SKMobile&quot;"
-				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);UNDER_CE=$(CEVER);WINCE;NDEBUG;$(PLATFORMDEFINES);$(ARCHFAM);$(_ARCHFAM_);_UNICODE;_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="_WIN32_WCE=$(CEVER);UNDER_CE=$(CEVER);WINCE;NDEBUG;$(PLATFORMDEFINES);$(ARCHFAM);$(_ARCHFAM_);_UNICODE;_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_HAS_EXCEPTIONS=0"
+				ExceptionHandling="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -520,14 +521,6 @@
 			</File>
 			<File
 				RelativePath=".\src\stdint.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\unicode.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\unicode.h"
 				>
 			</File>
 		</Filter>

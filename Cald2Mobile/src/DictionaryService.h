@@ -33,13 +33,13 @@ namespace mysk
 
 		virtual ~WordListService() {};
 
-		virtual PRUint32					findWordListPosition(std::wstring const& sortKey);
+		virtual SKERR findWordListPosition(std::wstring const& sortKey, PRUint32 * pos);
 
-		virtual PRUint32					findWordListPosition(std::string const& sortKey) = 0;
+		virtual SKERR findWordListPosition(std::string const& sortKey, PRUint32 * pos) = 0;
 
-		virtual PRUint32					getWordListCount() = 0;
+		virtual PRUint32 getWordListCount() = 0;
 
-		virtual WordListItem				getWordListItem(PRUint32 position) = 0;
+		virtual SKERR getWordListItem(PRUint32 position, WordListItem * item) = 0;
 
 	};
 
@@ -65,29 +65,15 @@ namespace mysk
 
 		virtual ~QueryService() {};
 
-		virtual void						query(std::wstring const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect);
+		virtual SKERR query(std::wstring const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect);
 
-		virtual void						query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect) = 0;
+		virtual SKERR query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect) = 0;
 
-		virtual PRUint32					getResultCount() = 0;
+		virtual PRUint32 getResultCount() = 0;
 
-		virtual ResultItem					getResultItem(PRUint32 position) = 0;
+		virtual SKERR getResultItem(PRUint32 position, ResultItem * item) = 0;
 	};
-/*
-	typedef	std::pair<std::string, std::string>		Content;
 
-	class ContentService
-	{
-	public :
-
-		ContentService() {};
-
-		virtual ~ContentService() {};
-
-		virtual Content						getContentById(PRUint32 entryId) = 0;
-
-	};
-*/
 	class FileSystemService
 	{
 	public :
@@ -102,15 +88,15 @@ namespace mysk
 			}
 		};
 
-		virtual SKFileSystem *				prepare(std::string const& fileSystem);
+		virtual SKERR prepare(std::string const& path, SKFileSystem ** fileSystem);
 
-		virtual void						getFileData(std::string const& fileSystem, std::string const& path, skPtr<SKBinary> & pData);
+		virtual SKERR getFileData(std::string const& fileSystem, std::string const& path, skPtr<SKBinary> & pData);
 
-		virtual void						getFileData(std::string const& fileSystem, std::string const& path, std::vector<uint8_t> & buffer);
+		virtual SKERR getFileData(std::string const& fileSystem, std::string const& path, std::vector<uint8_t> & buffer);
 
-		virtual void						getTextFileData(std::string const& fileSystem, std::string const& path, std::string & buffer);
+		virtual SKERR getTextFileData(std::string const& fileSystem, std::string const& path, std::string & buffer);
 
-		virtual void						copyFile(std::string const& fileSystem, std::string const& path, std::string const& destPath);
+		virtual SKERR copyFile(std::string const& fileSystem, std::string const& path, std::string const& destPath);
 
 	protected :
 
@@ -141,28 +127,55 @@ namespace mysk
 				delete fileSystemService;
 		}
 
-		virtual void init(char const* skHome);
+		void init(char const* skHome);
 
-		virtual WordListService * getWordListService()
+		WordListService * getWordListService()
 		{
 			return wordListService;
 		}
 
-		virtual QueryService * getQueryService()
+		 void setWordListService(WordListService * s)
+		{
+			if(NULL != wordListService)
+				delete wordListService;
+			wordListService = s;
+		}
+
+		QueryService * getQueryService()
 		{
 			return queryService;
 		}
 
-		virtual FileSystemService * getFileSystemService()
+		void setQueryService(QueryService * s)
+		{
+			if(NULL != queryService)
+				delete queryService;
+			queryService = s;
+		}
+
+		FileSystemService * getFileSystemService()
 		{
 			return fileSystemService;
 		}
 
+		void setFileSystemService(FileSystemService * s)
+		{
+			if(NULL != fileSystemService)
+				delete fileSystemService;
+			fileSystemService = s;
+		}
+
 	protected :
+
+		PRBool				wordListServiceReady;
 
 		WordListService *	wordListService;
 
+		PRBool				queryServiceReady;
+
 		QueryService *		queryService;
+
+		PRBool				fileSystemServiceReady;
 
 		FileSystemService * fileSystemService;
 
@@ -172,13 +185,13 @@ namespace mysk
 	{
 	public :
 
-		SKWordListService(char const* dataPath);
+		virtual SKERR init(char const* dataPath);
 
-		virtual PRUint32					findWordListPosition(std::string const& input);
+		virtual SKERR findWordListPosition(std::string const& sortKey, PRUint32 * pos);
 
-		virtual PRUint32					getWordListCount();
+		virtual PRUint32 getWordListCount();
 
-		virtual WordListItem				getWordListItem(PRUint32 position);
+		virtual SKERR getWordListItem(PRUint32 position, WordListItem * item);
 
 	private :
 
@@ -194,23 +207,24 @@ namespace mysk
 	{
 	public :
 
-		SKIndexQueryService(char const* indexPath, char const* indexDataPath, char const* deflecIndexPath, char const* deflecTabPath);
+		virtual SKERR init(char const* indexPath, char const* indexDataPath, char const* deflecIndexPath, char const* deflecTabPath);
 
-		virtual void						query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect);
+		virtual SKERR query(std::string const& input, PRBool bUseFlex, PRUint8 types, PRBool bUseDeflect);
 
-		virtual PRUint32					getResultCount();
+		virtual PRUint32 getResultCount();
 
-		virtual ResultItem					getResultItem(PRUint32 position);
+		virtual SKERR getResultItem(PRUint32 position, ResultItem * item);
 
 	protected :
 
-		skPtr<SKCursor>							SortCursor(skPtr<SKCursor> const& pxiCursor);
+		SKERR SortCursor(skPtr<SKCursor> const& pxiCursor, SKCursor** xiCursor);
 
-		skPtr<SKCursor>							GetCursorFromTable(
+		SKERR GetCursorFromTable(
 			skPtr<SKIRecordSet> const& pxTable, 
 			PRUint32 piPosition, 
 			std::string const& psLinkField,
-			std::string const& psField);
+			std::string const& psField,
+			SKCursor** xiCursor);
 
 		skPtr<skIStringSimplifier>			simplifier;
 

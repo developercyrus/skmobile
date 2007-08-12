@@ -43,7 +43,11 @@ public :
 		HRESULT rc = Run(CComBSTR(procedureName), comParams, result);
 		if(FAILED(rc))
 		{
-			THROW_RUNTIME_EXCEPTION(_T("Failed to run '") << procedureName << _T(" (") << args << _T(")'"));
+			CAtlString msg;
+			msg.Format(_T("Failed to run '%s' .\n"), procedureName);
+			for(size_t i = 0; i < argc; i++)
+				msg.AppendFormat(_T("param[%d] = %s\n"), i, args[i]);
+			SK_TRACE(SK_LOG_INFO, msg);
 		}
 		return rc;
 	}

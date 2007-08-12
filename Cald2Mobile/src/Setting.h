@@ -35,7 +35,7 @@ public :
 
 
 
-	tchar const* GetRootPathWString()
+	TCHAR const* GetRootPathWString()
 	{
 		return this->m_rootPathW;
 	}
@@ -49,7 +49,7 @@ public :
 
 
 
-	tchar const* GetTempPathWString()
+	TCHAR const* GetTempPathWString()
 	{
 		return this->m_tempPathW;
 	}

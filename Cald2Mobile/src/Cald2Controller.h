@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "skfind/backend/native/native.h"
+
 namespace mysk 
 {
 
@@ -105,7 +107,7 @@ protected :
 
 
 
-class Cald2Controller : public BasicController, public DictionaryService
+class Cald2Controller : public BasicController
 {
 public :
 
@@ -130,7 +132,7 @@ public :
 		m_queryMode = mainFrame->m_setting.LoadIntValue("MYSK_QUERY_MODE", 0x07);
 		m_zoomLevel = mainFrame->m_setting.LoadIntValue("MYSK_ZOOM_LEVEL", 2);
 
-		DictionaryService::init(mainFrame->m_setting.GetRootPathCString());
+		m_dictionaryService.init(mainFrame->m_setting.GetRootPathCString());
 	}
 
 
@@ -214,51 +216,45 @@ public :
 			m_isFrist = FALSE;
 			SK_TRACE(SK_LOG_DEBUG, "m_isFrist = FALSE");
 
-			try
+			// first
+			SKERR err = loadDictionaryService();
+			if(noErr != err)
 			{
-				// first
-				DictionaryService::wordListService = new SKWordListService("native:data/wordlist.skn");
-				DictionaryService::queryService = new SKIndexQueryService(
-					"data/index/complete.skn/index.cfi", 
-					"native:data/complete.skn",
-					"data/index/flex2stem.skn/index.cfi", 
-					"native:data/index/flex2stem.skn");
-				DictionaryService::fileSystemService = new FileSystemService;
-				DictionaryService::fileSystemService->prepare("data/entry/filesystem.cff");
-				DictionaryService::fileSystemService->prepare("data/extraexample/filesystem.cff");
-				DictionaryService::fileSystemService->prepare("data/htmlpanel/filesystem.cff");
-				DictionaryService::fileSystemService->prepare("data/pronus/filesystem.cff");
-				DictionaryService::fileSystemService->prepare("data/pronuk/filesystem.cff");
-
-				// add 1 tab
-				Base::addTab(TAB_NAME_WORDLIST);
-
-				// Add query modes
-				for(UINT i = 0; i < QUERY_MODE_INDEX_SIZE; i++)
-				{
-					QueryModeInfo & info = QUERY_MODE_INFO[i];
-					Base::addQueryMode(info.name);
-				}
-				Base::setQueryMode(m_queryMode);
-				
-				// initial XSL
-				CAtlString xslPath;
-				xslPath.Format(_T("%s/cald2/cald2.xsl"), _RootPath);
-				SK_TRACE(SK_LOG_DEBUG, _T("xslPath = %s"), xslPath);
-
-				CAtlString xslContent = loadFile(xslPath);
-				Base::setStyleSheet(xslContent);
-
-				// load word list
-				m_wordListCount = DictionaryService::wordListService->getWordListCount();
-				SK_TRACE(SK_LOG_DEBUG, _T("m_wordListCount = %d"), m_wordListCount);
-				setWordListPage(0);
+				SK_TRACE(SK_LOG_INFO, _T("Failed to inital Cald2DictionaryController. error=%d"), err);
+				return S_OK;				
 			}
-			catch (truntime_error& e)
+
+			// add 1 tab
+			Base::addTab(TAB_NAME_WORDLIST);
+
+			// Add query modes
+			for(UINT i = 0; i < QUERY_MODE_INDEX_SIZE; i++)
 			{
-				SK_TRACE(SK_LOG_INFO, _T("Failed to inital Cald2DictionaryController. error=%s"), 
-					e.errorMsg().c_str());
+				QueryModeInfo & info = QUERY_MODE_INFO[i];
+				Base::addQueryMode(info.name);
 			}
+			Base::setQueryMode(m_queryMode);
+			
+			// initial XSL
+			CAtlString xslPath;
+			xslPath.Format(_T("%s/cald2/cald2.xsl"), _RootPath);
+			SK_TRACE(SK_LOG_DEBUG, _T("xslPath = %s"), xslPath);
+
+			CAtlString xslContent;
+			err = loadFile(xslPath, xslContent);
+			if(noErr != err)
+			{
+				CAtlString msg;
+				msg.Format(_T("Failed to load xsl file %s"), xslPath);
+				error(err, _T("OnDocumentComplete"), msg);
+				return S_OK;
+			}
+			Base::setStyleSheet(xslContent);
+
+			// load word list
+			m_wordListCount = m_dictionaryService.getWordListService()->getWordListCount();
+			SK_TRACE(SK_LOG_DEBUG, _T("m_wordListCount = %d"), m_wordListCount);
+			setWordListPage(0);
 		}
 
 		return S_OK;
@@ -472,50 +468,59 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleLookup(%s, %d)"), queryString, queryModes);
 
-		try
+		SKERR err = noErr;
+
+		PRUint8 types = 0;
+		PRBool bUseDeflect = PR_TRUE;
+		CAtlString message;
+		message.AppendFormat(_T("Searching '%s' in "), queryString);
+		for(int i = 0; i < QUERY_MODE_INDEX_SIZE; i++)
 		{
-			PRUint8 types = 0;
-			PRBool bUseDeflect = PR_TRUE;
-			CAtlString message;
-			message.AppendFormat(_T("Searching '%s' in "), queryString);
-			for(int i = 0; i < QUERY_MODE_INDEX_SIZE; i++)
+			UINT mask = (0x01 << i);
+			if(0 != (queryModes & mask))
 			{
-				UINT mask = (0x01 << i);
-				if(0 != (queryModes & mask))
-				{
-					QueryModeInfo queryModeInfo = QUERY_MODE_INFO[i];
-					message.AppendFormat(_T("'%s' "), queryModeInfo.name);
-					types |= queryModeInfo.queryType;
-					if(queryModeInfo.disableDeflect)
-						bUseDeflect = PR_FALSE;
-				}
+				QueryModeInfo queryModeInfo = QUERY_MODE_INFO[i];
+				message.AppendFormat(_T("'%s' "), queryModeInfo.name);
+				types |= queryModeInfo.queryType;
+				if(queryModeInfo.disableDeflect)
+					bUseDeflect = PR_FALSE;
 			}
-			message.Append(_T( "modes..."));
-
-			Base::setTabTextContent(TAB_NAME_RESULTS, message);
-
-			SK_TRACE(SK_LOG_DEBUG, _T("queryString = %s, bUseFlex = true, types = %d, bUseDeflect = %d)"), 
-				queryString, types, bUseDeflect);
-			getQueryService()->query((TCHAR const*)queryString, true, types, bUseDeflect);
-
-			UINT count = getQueryService()->getResultCount();
-			SK_TRACE(SK_LOG_DEBUG, _T("ResultCount = %d"), count);
-			if(0 < count)
-			{
-				setResultPage(0);
-			} 
-			else
-			{
-				CAtlString notFound;
-				notFound.Format(_T("Failed to find '%s'"), m_queryString);
-				Base::setTabTextContent(TAB_NAME_RESULTS, notFound);
-			}
-			
 		}
-		catch (truntime_error& e)
+		message.Append(_T( "modes..."));
+
+		Base::setTabTextContent(TAB_NAME_RESULTS, message);
+
+		SK_TRACE(SK_LOG_DEBUG, _T("queryString = %s, bUseFlex = true, types = %d, bUseDeflect = %d)"), 
+			queryString, types, bUseDeflect);
+		err = m_dictionaryService.getQueryService()->query((TCHAR const*)queryString, true, types, bUseDeflect);
+		if(noErr != err)
 		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to look up. queryString_=%s, error=%s"), 
-				(TCHAR const*)queryString, e.errorMsg().c_str());
+			SK_TRACE(SK_LOG_DEBUG, _T("Failed to query '%s'. error = %d"), queryString, err); 
+
+			// prompt user
+			CAtlString msg;
+			msg.Format(_T("Failed to query '%s'. error = %d."), queryString, err);
+			Base::setTabTextContent(TAB_NAME_RESULTS, msg);
+
+			if(err_skf_fseek == err)
+			{
+				// reopen the dictionary service
+				reloadDictionaryService();
+			}
+			return;
+		}
+
+		UINT count = m_dictionaryService.getQueryService()->getResultCount();
+		SK_TRACE(SK_LOG_DEBUG, _T("ResultCount = %d"), count);
+		if(0 < count)
+		{
+			setResultPage(0);
+		} 
+		else
+		{
+			CAtlString notFound;
+			notFound.Format(_T("Failed to find '%s'"), m_queryString);
+			Base::setTabTextContent(TAB_NAME_RESULTS, notFound);
 		}
 		return;
 	}
@@ -565,36 +570,38 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::updateWordList(%s)"), queryString);
 
-		try
+		SKERR err = noErr;
+		// get sort key
+		CComVariant result;
+		TCHAR const* params[] = { queryString };
+		size_t paramsCount = sizeof(params) / sizeof(TCHAR const*);
+		m_script.Run(_T("GetWordListSortKey"), &result, paramsCount, params);
+
+		CComBSTR sortKey(result.bstrVal);
+		CAtlString sortKeyString = sortKey;
+		SK_TRACE(SK_LOG_DEBUG, _T("sortKeyString = %s"), sortKeyString);
+
+		std::string utf8(CW2A(sortKeyString, CP_UTF8));
+		UINT pos = 0;
+		err = m_dictionaryService.getWordListService()->findWordListPosition(utf8, &pos);
+		if(err != noErr)
 		{
-			// get sort key
-			CComVariant result;
-			TCHAR const* params[] = { queryString };
-			size_t paramsCount = sizeof(params) / sizeof(TCHAR const*);
-			m_script.Run(_T("GetWordListSortKey"), &result, paramsCount, params);
-
-			CComBSTR sortKey(result.bstrVal);
-			CAtlString sortKeyString = sortKey;
-			SK_TRACE(SK_LOG_DEBUG, _T("sortKeyString = %s"), sortKeyString);
-
-			std::string utf8(CW2A(sortKeyString, CP_UTF8));
-			UINT pos = getWordListService()->findWordListPosition(utf8);
-			SK_TRACE(SK_LOG_DEBUG, _T("WordListPosition = %d"), pos);
-
-			if(pos > 0 && pos < getWordListService()->getWordListCount())
-			{
-				UINT begin = pos - pos % m_wordListPageSize;
-				setWordListPage(begin);
-				CAtlString archor;
-				archor.Format(_T("wordlist-%d"), pos);
-				Base::htmlAnchor(archor);
-				Base::selectAnchor(archor);
-			}
+			if(err_skf_fseek == err)
+				reloadDictionaryService();
+			else
+				error(err, _T("updateWordList"), _T("Failed to update word list."));
+			return;
 		}
-		catch (truntime_error& e)
+		
+		SK_TRACE(SK_LOG_DEBUG, _T("WordListPosition = %d"), pos);
+		if(pos > 0 && pos < m_dictionaryService.getWordListService()->getWordListCount())
 		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to update word list. queryString=%s, error=%s"), 
-				queryString, e.errorMsg().c_str());
+			UINT begin = pos - pos % m_wordListPageSize;
+			setWordListPage(begin);
+			CAtlString archor;
+			archor.Format(_T("wordlist-%d"), pos);
+			Base::htmlAnchor(archor);
+			Base::selectAnchor(archor);
 		}
 	}
 
@@ -632,32 +639,23 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleSetContentTab(%s)"), urlPath);
 
-		try
+		ContentData result;
+		BOOL rc = loadContentData(urlPath, result);
+		if(!rc)
 		{
-			ContentData result;
-			BOOL rc = loadContentData(urlPath, result);
-			if(!rc)
-			{
-				SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
-				return FALSE;
-			}
-
-			if(result.isXml)
-				Base::setTabXmlContent(TAB_NAME_CONTENT, result.content);
-			else
-				Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
-			if(!result.archor.IsEmpty() && _T("0") != result.archor)
-				Base::htmlAnchor(result.archor);
-			if(addToHistory)
-				m_contentHistory.Add(urlPath);
-			return TRUE;
-		}
-		catch (truntime_error& e)
-		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to load content. urlPath = %s, cause = %s"),
-				urlPath, e.errorMsg().c_str());
+			SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
 			return FALSE;
 		}
+
+		if(result.isXml)
+			Base::setTabXmlContent(TAB_NAME_CONTENT, result.content);
+		else
+			Base::setTabHtmlContent(TAB_NAME_CONTENT, result.content);
+		if(!result.archor.IsEmpty() && _T("0") != result.archor)
+			Base::htmlAnchor(result.archor);
+		if(addToHistory)
+			m_contentHistory.Add(urlPath);
+		return TRUE;
 	}
 
 
@@ -666,63 +664,79 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handlePlaySound(%s)"), urlPath);
 
-		try
+		int pos = urlPath.Find(_T(':'));
+		CAtlString protocal = urlPath.Mid(0, pos);
+
+		CAtlString soundFilePath;
+		if(protocal == _T("sk"))
 		{
-			int pos = urlPath.Find(_T(':'));
-			CAtlString protocal = urlPath.Mid(0, pos);
-
-			CAtlString soundFilePath;
-			if(protocal == _T("sk"))
+			// skip '://fs/2.0/'
+			CAtlString prefix = urlPath.Mid(pos, 10);
+			if(prefix != _T("://fs/2.0/"))
 			{
-				// skip '://fs/2.0/'
-				CAtlString prefix = urlPath.Mid(pos, 10);
-				if(prefix != _T("://fs/2.0/"))
-				{
-					// unsupported SK protocal
-					SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
-					return;
-				}
-
-				CAtlString fullPath = urlPath.Mid(pos + 10);
-
-				// extract it
-				char utf8Path[2048] = {0};
-				int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
-				string utf8FullPath(utf8Path, len);
-				pos = utf8FullPath.find('!');
-				string filesystem = utf8FullPath.substr(0, pos);
-				// skip '!/'
-				string path = utf8FullPath.substr(pos + 2);
-
-				// temp file path
-				// skip /filesystem.cff
-				string dir = filesystem.substr(0, filesystem.size() - 15);
-				string utf8SoundFilePath;
-				utf8SoundFilePath.append(m_mainFrame->m_setting.GetTempPathCString()).append("/").append(dir).append("/").append(path);
-				soundFilePath = CA2W(utf8SoundFilePath.c_str(), CP_UTF8);
-
-				SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, utf8SoundFilePath = %s", 
-					filesystem.c_str(), path.c_str(), utf8SoundFilePath.c_str());
-				getFileSystemService()->copyFile(filesystem, path, utf8SoundFilePath);
-			} else if(protocal == _T("file"))
-			{
-				// skip '://'
-				soundFilePath = urlPath.Mid(pos + 3);
-			} else
-			{
-				// unsupported protocal
-				SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
+				// unsupported SK protocal
+				SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
 				return;
 			}
 
-			SK_TRACE(SK_LOG_DEBUG, _T("soundFilePath = %s"), soundFilePath);
-			Base::playSound(soundFilePath);
-		}
-		catch (truntime_error& e)
+			CAtlString fullPath = urlPath.Mid(pos + 10);
+
+			// extract it
+			char utf8Path[2048] = {0};
+			int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
+			string utf8FullPath(utf8Path, len);
+			pos = utf8FullPath.find('!');
+			string filesystem = utf8FullPath.substr(0, pos);
+			// skip '!/'
+			string path = utf8FullPath.substr(pos + 2);
+
+			// temp file path
+			// skip /filesystem.cff
+			string dir = filesystem.substr(0, filesystem.size() - 15);
+			string utf8SoundFilePath;
+			utf8SoundFilePath.append(m_mainFrame->m_setting.GetTempPathCString()).append("/").append(dir).append("/").append(path);
+			soundFilePath = CA2W(utf8SoundFilePath.c_str(), CP_UTF8);
+
+			SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, utf8SoundFilePath = %s", 
+				filesystem.c_str(), path.c_str(), utf8SoundFilePath.c_str());
+			SKERR err = m_dictionaryService.getFileSystemService()->copyFile(filesystem, path, utf8SoundFilePath);
+			switch(err)
+			{
+			case noErr:
+				// do nothing
+				break;
+			case err_notfound:
+				{
+					CAtlString msg;
+					msg.Format(_T("Can't find the %s folder. Do you install the sound data?"), 
+						CA2W(filesystem.c_str()));
+					error(err, _T("handlePlaySound"), msg);
+					return;
+				}
+			case err_skf_fseek :
+				reloadDictionaryService();
+				return;
+			default :
+				{
+					CAtlString msg;
+					msg.Format(_T("Failed to play sound. urlPath = %s"), urlPath);
+					error(err, _T("handlePlaySound"), msg);
+					return;
+				}
+			}
+		} else if(protocal == _T("file"))
 		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to play sound. urlPath = %s, cause = %s"),
-				urlPath, e.errorMsg().c_str());
-		}	
+			// skip '://'
+			soundFilePath = urlPath.Mid(pos + 3);
+		} else
+		{
+			// unsupported protocal
+			SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
+			return;
+		}
+
+		SK_TRACE(SK_LOG_DEBUG, _T("soundFilePath = %s"), soundFilePath);
+		Base::playSound(soundFilePath);
 	}
 
 
@@ -731,15 +745,7 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handlePlaySoundEnded(%s)"), urlPath);
 
-		try
-		{
-			PR_Delete(CW2A(urlPath, CP_UTF8));
-		}
-		catch (truntime_error& e)
-		{
-			SK_TRACE(SK_LOG_INFO, "Failed to delete temp sound file. soundFilePath = %s, cause = %s",
-				urlPath, e.errorMsg().c_str());
-		}	
+		PR_Delete(CW2A(urlPath, CP_UTF8));
 	}
 
 
@@ -747,29 +753,21 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::handleNewTab(%s, %s)"), tabName, urlPath);
 
-		try
+		ContentData result;
+		BOOL rc = loadContentData(urlPath, result);
+		if(!rc)
 		{
-			ContentData result;
-			BOOL rc = loadContentData(urlPath, result);
-			if(!rc)
-			{
-				SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
-				return;
-			}
+			SK_TRACE(SK_LOG_INFO, _T("Failed to load %s"), urlPath);
+			return;
+		}
 
-			Base::addTab(tabName);
-			if(result.isXml)
-				Base::setTabXmlContent(tabName, result.content);
-			else
-				Base::setTabHtmlContent(tabName, result.content);
-			if(!result.archor.IsEmpty() && _T("0") != result.archor)
-				Base::htmlAnchor(result.archor);
-		}
-		catch (truntime_error& e)
-		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to new tab. tabName=  %s, urlPath = %s, cause = %s"),
-				tabName, urlPath, e.errorMsg().c_str());
-		}
+		Base::addTab(tabName);
+		if(result.isXml)
+			Base::setTabXmlContent(tabName, result.content);
+		else
+			Base::setTabHtmlContent(tabName, result.content);
+		if(!result.archor.IsEmpty() && _T("0") != result.archor)
+			Base::htmlAnchor(result.archor);
 	}
 
 
@@ -787,71 +785,78 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::setResultPage(%d)"), begin);
 
-		UINT count = getQueryService()->getResultCount();
-		try
+		UINT count = m_dictionaryService.getQueryService()->getResultCount();
+		if(begin >= count || begin < 0)
 		{
-			if(begin >= count || begin < 0)
+			return;
+		}
+
+		m_currentResultsBegin = begin;
+		UINT offset = min(count - m_currentResultsBegin, m_resultsPageSize);
+		UINT end = begin + offset;
+
+		ostringstream buf;
+		buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
+			<< "' isVGA='" << m_isVGA << "'>"
+			<< "<results xmlns:p='Edi'"
+			<< "  total='" << count
+			<< "' begin='" << begin
+			<< "' end='" << end
+			<< "'>";
+
+		for(UINT i = begin; i < end; i++)
+		{
+			ResultItem item;
+			SKERR err = m_dictionaryService.getQueryService()->getResultItem(i, &item);
+			if(err != noErr)
 			{
+				CAtlString msg;
+				msg.Format(_T("Failed to get NO. %d result item."), i);
+				error(err, _T("setResultPage"), msg);
 				return;
 			}
 
-			m_currentResultsBegin = begin;
-			UINT offset = min(count - m_currentResultsBegin, m_resultsPageSize);
-			UINT end = begin + offset;
+			buf << "<resultItem>"
+				<< "<entryId>" << item.entryId << "</entryId>"
+				<< "<type>" << item.type << "</type>";
 
-			ostringstream buf;
-			buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
-				<< "' isVGA='" << m_isVGA << "'>"
-				<< "<results xmlns:p='Edi'"
-				<< "  total='" << count
-				<< "' begin='" << begin
-				<< "' end='" << end
-				<< "'>";
+			if(item.contextId != "0" )
+				buf << "<contextId>" << item.contextId << "</contextId>";
 
-			for(UINT i = begin; i < end; i++)
-			{
-				ResultItem item = getQueryService()->getResultItem(i);
-
-				buf << "<resultItem>"
-					<< "<entryId>" << item.entryId << "</entryId>"
-					<< "<type>" << item.type << "</type>";
-
-				if(item.contextId != "0" )
-					buf << "<contextId>" << item.contextId << "</contextId>";
-
-				buf	<< "<label>" << item.label << "</label>"
-					<< "<clid>" << item.clid << "</clid>"
-					<< "</resultItem>";
-			}
-
-			buf << "</results>"
-				<< "</skshell>";
-
-			string utf8 = buf.str();
-			CAtlString utf16(CA2W(utf8.c_str(), CP_UTF8));
-
-			Base::setTabXmlContent(TAB_NAME_RESULTS, utf16);
-
-			if(0 == begin && 1 == offset)
-			{
-				SK_TRACE(SK_LOG_DEBUG, _T("only one result, directly display content"));
-
-				// only one result, directly display content
-				ResultItem item = getQueryService()->getResultItem(0);
-				SK_TRACE(SK_LOG_DEBUG, "item.entryId = %d, item.type = %d, item.contextId = %s, item.clid = %d, item.label = %s", 
-					item.entryId, item.type, item.contextId.c_str(), item.clid, item.label.c_str());
-
-				CAtlString urlPath;
-				urlPath.AppendFormat(_T("sk://fs/2.0/data/entry/filesystem.cff!/@%d"), item.entryId);
-				if(item.contextId != "0" )
-					urlPath.AppendFormat(_T("#%s"), CA2W(item.contextId.c_str(), CP_UTF8));
-				this->handleSetContentTab(urlPath, TRUE);
-			}
+			buf	<< "<label>" << item.label << "</label>"
+				<< "<clid>" << item.clid << "</clid>"
+				<< "</resultItem>";
 		}
-		catch (truntime_error& e)
+
+		buf << "</results>"
+			<< "</skshell>";
+
+		string utf8 = buf.str();
+		CAtlString utf16(CA2W(utf8.c_str(), CP_UTF8));
+
+		Base::setTabXmlContent(TAB_NAME_RESULTS, utf16);
+
+		if(0 == begin && 1 == offset)
 		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to set result page. queryString_=%s, begin = %d, count = %d, error=%s"), 
-				(TCHAR const*)Base::m_queryString, begin, count, e.errorMsg().c_str());
+			SK_TRACE(SK_LOG_DEBUG, _T("only one result, directly display content"));
+
+			// only one result, directly display content
+			ResultItem item;
+			SKERR err =  m_dictionaryService.getQueryService()->getResultItem(0, &item);
+			if(err != noErr)
+			{
+				error(err, _T("setResultPage"), _T("Failed to get the first result item."));
+				return;
+			}
+
+			SK_TRACE(SK_LOG_DEBUG, "item.entryId = %d, item.type = %d, item.contextId = %s, item.clid = %d, item.label = %s", 
+				item.entryId, item.type, item.contextId.c_str(), item.clid, item.label.c_str());
+
+			CAtlString urlPath;
+			urlPath.AppendFormat(_T("sk://fs/2.0/data/entry/filesystem.cff!/@%d"), item.entryId);
+			if(item.contextId != "0" )
+				urlPath.AppendFormat(_T("#%s"), CA2W(item.contextId.c_str(), CP_UTF8));
+			this->handleSetContentTab(urlPath, TRUE);
 		}
 		return;
 	}
@@ -859,48 +864,49 @@ protected :
 
 
 	void setWordListPage(UINT begin)
-		{
+	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::setWordListPage(%d)"), begin);
 
-		try
+		if(begin >= m_wordListCount || begin < 0)
+			return;
+
+		m_currentWordListBegin = begin;
+		UINT offset = min(m_wordListCount - m_currentWordListBegin, m_wordListPageSize);
+		UINT end = begin + offset;
+		ostringstream buf;
+		buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
+			<< "' isVGA='" << m_isVGA << "'>"
+			<< "<wordlist xmlns:p='Edi'"
+			<< "  total='" << m_wordListCount
+			<< "' begin='" << begin
+			<< "' end='" << end
+			<< "'>";
+
+		for(UINT i = begin; i < end; i++)
 		{
-			if(begin >= m_wordListCount || begin < 0)
-				return;
-
-			m_currentWordListBegin = begin;
-			UINT offset = min(m_wordListCount - m_currentWordListBegin, m_wordListPageSize);
-			UINT end = begin + offset;
-			ostringstream buf;
-			buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
-				<< "' isVGA='" << m_isVGA << "'>"
-				<< "<wordlist xmlns:p='Edi'"
-				<< "  total='" << m_wordListCount
-				<< "' begin='" << begin
-				<< "' end='" << end
-				<< "'>";
-
-			for(UINT i = begin; i < end; i++)
+			WordListItem item;
+			SKERR err = m_dictionaryService.getWordListService()->getWordListItem(i, &item);
+			if(err != noErr)
 			{
-				WordListItem item = getWordListService()->getWordListItem(i);
-
-				buf << "<wordListItem>"
-					<< "<entryId>" << item.entryId << "</entryId>"
-					<< "<label>" << item.label << "</label>"
-					<< "</wordListItem>";
+				CAtlString msg;
+				msg.Format(_T("Failed to get NO. %d result item."), i);
+				error(err, _T("setWordListPage"), msg);
+				return;
 			}
 
-			buf << "</wordlist>"
-				<< "</skshell>";
-
-			string utf8 = buf.str();
-			CAtlString utf16(CA2W(utf8.c_str(), CP_UTF8));
-
-			Base::setTabXmlContent(TAB_NAME_WORDLIST, utf16);
+			buf << "<wordListItem>"
+				<< "<entryId>" << item.entryId << "</entryId>"
+				<< "<label>" << item.label << "</label>"
+				<< "</wordListItem>";
 		}
-		catch (truntime_error& e)
-		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to init word list. error=%s"), e.errorMsg().c_str());
-		}
+
+		buf << "</wordlist>"
+			<< "</skshell>";
+
+		string utf8 = buf.str();
+		CAtlString utf16(CA2W(utf8.c_str(), CP_UTF8));
+
+		Base::setTabXmlContent(TAB_NAME_WORDLIST, utf16);
 		return;
 	}
 
@@ -910,109 +916,189 @@ protected :
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::loadContentData(%s)"), urlPath);
 
-		try
+		int pos = urlPath.Find(_T(':'));
+		CAtlString protocal = urlPath.Mid(0, pos);
+
+		if(protocal == _T("sk"))
 		{
-			int pos = urlPath.Find(_T(':'));
-			CAtlString protocal = urlPath.Mid(0, pos);
-
-			if(protocal == _T("sk"))
+			// skip '://fs/2.0/'
+			CAtlString prefix = urlPath.Mid(pos, 10);
+			if(prefix != _T("://fs/2.0/"))
 			{
-				// skip '://fs/2.0/'
-				CAtlString prefix = urlPath.Mid(pos, 10);
-				if(prefix != _T("://fs/2.0/"))
-				{
-					// unsupported SK protocal
-					SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
-					return FALSE;
-				}
-
-				CAtlString fullPath = urlPath.Mid(pos + 10);
-
-				// extract it
-				char utf8Path[2048] = {0};
-				int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
-				string utf8FullPath(utf8Path, len);
-				int filesystemSplit = utf8FullPath.find('!');
-				int archorSplit = utf8FullPath.find('#');
-				string filesystem = utf8FullPath.substr(0, filesystemSplit);
-				// skip '!/'
-				string path = utf8FullPath.substr(filesystemSplit + 2, archorSplit - filesystemSplit - 2);
-				// skip '#'
-				string utf8Archor = utf8FullPath.substr(archorSplit + 1);
-				result.archor = CA2W(utf8Archor.c_str(), CP_UTF8);
-				SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, archor = %s", 
-					filesystem.c_str(), path.c_str(), utf8Archor.c_str());
-
-				std::string contentData;
-				getFileSystemService()->getTextFileData(filesystem, path, contentData);
-
-				if(filesystem == "data/entry/filesystem.cff")
-				{
-					result.isXml = TRUE;
-					ostringstream buf;
-					buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
-						<< "' isVGA='" << m_isVGA << "'>"
-						<< "<content>"
-						<< contentData
-						<< "</content>"
-						<< "</skshell>";
-					string utf8 = buf.str();
-
-					result.content = CA2W(utf8.c_str(), CP_UTF8);
-				}
-				else
-				{
-					result.isXml = FALSE;
-					result.content = CA2W(contentData.c_str(), CP_UTF8);
-					// extract HTML Body
-					int bodyBeg = result.content.Find(_T("<body"));
-					if(-1 != bodyBeg)
-						bodyBeg = result.content.Find(_T('>'), bodyBeg);
-					int bodyEnd = result.content.Find(_T("</body>"));
-					if(-1 != bodyBeg && -1 != bodyEnd)
-					{
-						result.content = result.content.Mid(bodyBeg + 1, bodyEnd - bodyBeg - 1);
-					}
-				}
-			} else if(protocal == _T("file"))
-			{
-				// skip '://'
-				CAtlString fullPath = urlPath.Mid(pos + 3);
-				SK_TRACE(SK_LOG_DEBUG, _T("fullPath = %s"), fullPath);
-
-				CAtlFile file;
-				HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
-				if(S_OK != rc)
-				{
-					SK_TRACE(SK_LOG_INFO, _T("File isn't existance. urlPath = %s"), urlPath);
-					return FALSE;
-				}
-				ULONGLONG size = 0;
-				file.GetSize(size);
-				LPTSTR buffer = result.content.GetBufferSetLength((int)(size + 1));
-				file.Read(buffer, (int)size);
-			} else
-			{
-				// unsupported protocal
-				SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
+				// unsupported SK protocal
+				SK_TRACE(SK_LOG_INFO, _T("unsupported SK protocal. urlPath = %s"), urlPath);
 				return FALSE;
 			}
 
-			if(result.content.IsEmpty())
+			CAtlString fullPath = urlPath.Mid(pos + 10);
+
+			// extract it
+			char utf8Path[2048] = {0};
+			int len = AtlUnicodeToUTF8(fullPath, fullPath.GetLength(), utf8Path, sizeof utf8Path);
+			string utf8FullPath(utf8Path, len);
+			int filesystemSplit = utf8FullPath.find('!');
+			int archorSplit = utf8FullPath.find('#');
+			string filesystem = utf8FullPath.substr(0, filesystemSplit);
+			// skip '!/'
+			string path = utf8FullPath.substr(filesystemSplit + 2, archorSplit - filesystemSplit - 2);
+			// skip '#'
+			string utf8Archor = utf8FullPath.substr(archorSplit + 1);
+			result.archor = CA2W(utf8Archor.c_str(), CP_UTF8);
+			SK_TRACE(SK_LOG_DEBUG, "filesystem = %s, path = %s, archor = %s", 
+				filesystem.c_str(), path.c_str(), utf8Archor.c_str());
+
+			std::string contentData;
+			SKERR err = m_dictionaryService.getFileSystemService()->getTextFileData(filesystem, path, contentData);
+			switch(err)
 			{
-				SK_TRACE(SK_LOG_INFO, _T("Failed to load file data. urlPath = %s"), urlPath);
+			case noErr:
+				// do nothing
+				break;
+			case err_notfound:
+				{
+					CAtlString msg;
+					msg.Format(_T("Can't find the %s folder. Do you install this data?"), 
+						CA2W(filesystem.c_str()));
+					error(err, _T("loadContentData"), msg);
+					return FALSE;
+				}
+			case err_skf_fseek :
+				reloadDictionaryService();
 				return FALSE;
+			default :
+				{
+					CAtlString msg;
+					msg.Format(_T("Failed to load content. urlPath = %s, error = %d"), urlPath, err);
+					error(err, _T("loadContentData"), msg);
+					return FALSE;
+				}
 			}
 
-			SK_TRACE(SK_LOG_DEBUG, _T("result.isXml = %d, result.archor = %s, result.content : \n%s"), result.isXml, result.archor, result.content);
-			return TRUE;
-		}
-		catch (truntime_error& e)
+			if(filesystem == "data/entry/filesystem.cff")
+			{
+				result.isXml = TRUE;
+				ostringstream buf;
+				buf << "<skshell root='" << m_mainFrame->m_setting.GetRootPathCString() 
+					<< "' isVGA='" << m_isVGA << "'>"
+					<< "<content>"
+					<< contentData
+					<< "</content>"
+					<< "</skshell>";
+				string utf8 = buf.str();
+
+				result.content = CA2W(utf8.c_str(), CP_UTF8);
+			}
+			else
+			{
+				result.isXml = FALSE;
+				result.content = CA2W(contentData.c_str(), CP_UTF8);
+				// extract HTML Body
+				int bodyBeg = result.content.Find(_T("<body"));
+				if(-1 != bodyBeg)
+					bodyBeg = result.content.Find(_T('>'), bodyBeg);
+				int bodyEnd = result.content.Find(_T("</body>"));
+				if(-1 != bodyBeg && -1 != bodyEnd)
+				{
+					result.content = result.content.Mid(bodyBeg + 1, bodyEnd - bodyBeg - 1);
+				}
+			}
+		} else if(protocal == _T("file"))
 		{
-			SK_TRACE(SK_LOG_INFO, _T("Failed to load content. urlPath = %s, cause = %s"),
-				urlPath, e.errorMsg().c_str());
+			// skip '://'
+			CAtlString fullPath = urlPath.Mid(pos + 3);
+			SK_TRACE(SK_LOG_DEBUG, _T("fullPath = %s"), fullPath);
+
+			CAtlFile file;
+			HRESULT rc = file.Create(fullPath, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING);
+			if(S_OK != rc)
+			{
+				SK_TRACE(SK_LOG_INFO, _T("File isn't existance. urlPath = %s"), urlPath);
+				return FALSE;
+			}
+			ULONGLONG size = 0;
+			file.GetSize(size);
+			LPTSTR buffer = result.content.GetBufferSetLength((int)(size + 1));
+			file.Read(buffer, (int)size);
+		} else
+		{
+			// unsupported protocal
+			SK_TRACE(SK_LOG_INFO, _T("unsupported protocal. urlPath = %s"), urlPath);
 			return FALSE;
 		}
+
+		if(result.content.IsEmpty())
+		{
+			SK_TRACE(SK_LOG_INFO, _T("Failed to load file data. urlPath = %s"), urlPath);
+			return FALSE;
+		}
+
+		SK_TRACE(SK_LOG_DEBUG, _T("result.isXml = %d, result.archor = %s, result.content : \n%s"), result.isXml, result.archor, result.content);
+		return TRUE;
+	}
+
+
+
+	SKERR loadDictionaryService()
+	{
+		SKERR err = noErr;
+
+		SKWordListService * wordlistService = new SKWordListService;
+		err = wordlistService->init("native:data/wordlist.skn");
+		if(noErr != err)
+		{
+			CAtlString msg;
+			msg.Format(_T("Failed to load wordlist data from %s"), _T("data/wordlist.skn"));
+			error(err, _T("loadDictionaryService"), msg);
+			return err;
+		}
+		m_dictionaryService.setWordListService(wordlistService);
+
+		SKIndexQueryService * queryService = new SKIndexQueryService;
+		err = queryService->init(
+			"data/index/complete.skn/index.cfi", 
+			"native:data/complete.skn",
+			"data/index/flex2stem.skn/index.cfi", 
+			"native:data/index/flex2stem.skn");
+		if(noErr != err)
+		{
+			CAtlString msg;
+			msg.Format(_T("Failed to init index service from %s, %s, %s, %s"), 
+				_T("data/index/complete.skn/index.cfi"),
+				_T("data/complete.skn"),
+				_T("data/index/flex2stem.skn/index.cfi"),
+				_T("data/index/flex2stem.skn"));
+			error(err, _T("loadDictionaryService"), msg);
+			return err;
+		}
+		m_dictionaryService.setQueryService(queryService);
+
+		m_dictionaryService.setFileSystemService(new FileSystemService);
+
+		return noErr;
+	}
+
+
+
+	void reloadDictionaryService()
+	{
+		SK_TRACE(SK_LOG_INFO, "checkDictionaryService : The SD/CF card is removed.");
+
+		CAtlString msg;
+		msg.Format(_T("FileDesc is invalidation.\nMaybe the SD/CF card was removed.\nPlease check the data files of Cald2Mobile.\n Then try again."));
+		m_view->MessageBox(msg, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
+
+		loadDictionaryService();
+	}
+
+
+
+	void error(SKERR err, CAtlString const& functionName, CAtlString const& message)
+	{
+		SK_TRACE(SK_LOG_INFO, _T("%s : error = %d. (%s)"), functionName, err, message);
+
+		CAtlString prompt;
+		prompt.Format(_T("%s\nerror = %d"), message, err);
+		m_view->MessageBox(prompt, _T("Cald2Mobile"), MB_OK | MB_ICONWARNING);
 	}
 
 
@@ -1040,7 +1126,7 @@ protected :
 
 
 
-	static CAtlString loadFile(CAtlString const& path)
+	static SKERR loadFile(CAtlString const& path, CAtlString & result)
 	{
 		SK_TRACE(SK_LOG_DEBUG, _T("Cald2Controller::loadFile(%s)"), path);
 
@@ -1048,7 +1134,10 @@ protected :
 
 		FILE *stream;
 		if( NULL == (stream = _wfopen( path, _T("r" ))) )
-			THROW_RUNTIME_EXCEPTION(_T("Failed to open ") << (TCHAR const*)path);
+		{
+			SK_TRACE(SK_LOG_INFO, _T("Failed to open %s"), path);
+			return err_notfound;
+		}
 
 		int  count = 0;
 		char buffer[1024];
@@ -1058,15 +1147,18 @@ protected :
 			if( ferror( stream ) )
 			{
 				fclose( stream );
-				THROW_RUNTIME_EXCEPTION(_T("Failed to read ") << (TCHAR const*)path);
+				SK_TRACE(SK_LOG_INFO, _T("Failed to read %s"), path);
+				return err_skf_fread;
 			}
 			content.append(buffer, count);
 		}
 		fclose( stream );
 		
-		return CAtlString (CA2W(content.c_str(), CP_UTF8));
+		result = CA2W(content.c_str(), CP_UTF8);
+		return noErr;
 	}
 
+	DictionaryService	m_dictionaryService;
 
 	UINT			m_wordListPageSize;
 

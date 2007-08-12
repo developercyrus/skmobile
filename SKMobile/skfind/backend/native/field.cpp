@@ -433,10 +433,15 @@ SKERR SKField::GetDataFieldValue(const void * pBuffer,
     if(lCount)
     {
         err = pTda->Load (lOffset, lCount);
-        if(err == noErr)
-            *ppBinary=sk_CreateInstance(SKBinary)(pTda->GetBufferPtr(),lCount);
-
-        err = pTda->Unload();
+        if(noErr != err)
+		{
+			pTda->Unload();
+			return SKError(err,"[SKField::GetDataFieldValue] "
+				"Failed to load TDA file. lOffset = %d, lCount = %d, error = %d",
+				lOffset, lCount, err);
+		}
+        *ppBinary=sk_CreateInstance(SKBinary)(pTda->GetBufferPtr(),lCount);
+		err = pTda->Unload();
     }
 
     return noErr;
