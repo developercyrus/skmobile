@@ -464,6 +464,7 @@ SKERR SKIndexQueryService::query(std::string const& input, PRBool bUseFlex, PRUi
 
 	skPtr<SKCursorFilterRecordWrapper> xiCursorFilter(new SKCursorFilterRecordWrapper);
 	err = xiCursorFilter->SetRecordFilter(xiRFUN, true);
+	if(err != noErr)
 	{
 		SK_TRACE(SK_LOG_INFO, "Failed to SetRecordFilter. queryString = %s .", input.c_str()) ;
 		return err;
