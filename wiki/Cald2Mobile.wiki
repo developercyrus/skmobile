@@ -11,6 +11,9 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
 
 
 = 变更日志 =
+  == 0.64版 2007/08/14 ==
+  * [http://code.google.com/p/skmobile/issues/detail?id=17 NO.17 Issue]  修正“查询结果不正确，总是显示许多‘A’开始的词条”BUG。
+  * [http://code.google.com/p/skmobile/issues/detail?id=18 NO.18 Issue]  允许用户删除数据目录中的image、pronuk和pronus以减少磁盘占用。
   == 0.63版 2007/08/12 ==
   * [http://code.google.com/p/skmobile/issues/detail?id=2 NO.2 Issue]  修正VGA/QVGA模式判断错误BUG。
   * [http://code.google.com/p/skmobile/issues/detail?id=3 NO.3 Issue]  修正休眠或关机后查询导致程序退出的BUG。
@@ -66,6 +69,8 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
     在[http://code.google.com/p/skmobile/downloads/list 下载区]下载最新的Cald2Mobile_bin.zip，解压到SD/CF卡上你所喜欢的任何地方。
   # 准备词典数据
     Cald2Mobile的词典数据需要270M磁盘空间。在上一步的解压目录下建立一个data目录。然后将CALD2光盘上data目录下的complete.skn、entry、extraexample、htmlpanel、image、index、pronuk、pronus和wordlist.skn目录拷贝到PDA的data目录下。例如：http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Install_data.jpg
+    客户也可以将数据目录中的image、pronuk、pronus删除以减小词典体积。精简后，占用磁盘空
+间48M。其中pronuk是英音发音数据，pronus是美音发音数据，客户也可以根据自己的需要保留一种。当未安装发音数据，点击发音图标时，将弹出错误对话框。
   # 修改配置。
     自从0.6版起，缺省设置无需修改即可正常工作。
 
@@ -177,4 +182,3 @@ Cald2Mobile的缺点：
     Cald2Mobile目前仅支持CALD2。这是优点同时也是缺点。不过基于CALD2相同的IDM SK技术的词典还有LDOCE2和OALD7。而且通过SkProd，用户也可以自己制作词典。MDict拥用丰富的词典资源，而且支持从更丰富的StarDict之间的转换。
   * 性能相比MDict差
     Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
-
