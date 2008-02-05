@@ -182,3 +182,30 @@ Cald2Mobile的缺点：
     Cald2Mobile目前仅支持CALD2。这是优点同时也是缺点。不过基于CALD2相同的IDM SK技术的词典还有LDOCE2和OALD7。而且通过SkProd，用户也可以自己制作词典。MDict拥用丰富的词典资源，而且支持从更丰富的StarDict之间的转换。
   * 性能相比MDict差
     Cald2Mobile由于是从桌面程序移植的，相比MDict使用更多的内存。虽然经过简单优化，仍需要接近2～3M的内存。MDict使用的内存<1M。Cald2Mobile发音有时显得响应很慢。部分单词在X51V上需要6s以上的时间才能发音，当然大部分单词在1～3s左右。
+
+
+= FAQ =
+* Q: 我发现在QVGA下ICON太小
+  A: 这个程序用的XML+XSLT+CSS来显示的。所有的视觉效果在CSS和XSLT里修改。
+  打开cald2mobile\cald2\cald2.xsl，查找img，你会看见好几个类似：
+      <xsl:element name="img">
+        <xsl:attribute name="src">
+          <xsl:value-of select="$root" />
+          <xsl:text>/cald2/png/ExtEx.png</xsl:text>
+        </xsl:attribute>
+        <xsl:choose>
+          <xsl:when test="1 = $isVGA">
+            <xsl:attribute name="width">100</xsl:attribute>
+            <xsl:attribute name="height">20</xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="width">50</xsl:attribute>
+            <xsl:attribute name="height">10</xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:element>
+   请修改otherwise里的width和height，然后重启就可以了。
+
+* Q: 我已将MYSK_ZOOM_LEVEL设到最大，但还是觉得字体太小。
+  A: 这个程序用的XML+XSLT+CSS来显示的。所有的视觉效果在CSS和XSLT里修改。
+  打开cald2mobile\cald2\目录下的entry_QVGA.css或entry_VGA.css，修改里面所有的font-size就可以了。重启后配置生效。
