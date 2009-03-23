@@ -9,6 +9,12 @@
 		<link rel="stylesheet" type="text/css" href="vforms.css"/> 
 		<link rel="stylesheet" type="text/css" href="wfamily.css"/> 
 		<script>
+		    function getWordListPageSize() {
+		        return 10;
+		    }
+		    function getResultsPageSize() {
+		        return 10;
+		    }
 			var isEnableDebug = false;
 			
 			var tabs = ["Tab0", "Tab1", "Tab2", "Tab3", "Tab4", "Tab5", "Tab6", "Tab7", "Tab8", "Tab9"];
@@ -35,6 +41,7 @@
 					var tab = document.all[tabId];
 					tab.innerHTML = tabContent;
 					selectTab(tabIndex);
+					currentSoundIndex = 0;
 			}
 			
 			function setContentHtml(tabIndex, contentHtml) {
@@ -130,6 +137,47 @@
 			    link.focus();
 			}
 			
+			var currentSoundIndex = 0;
+			function nextSound() {
+			    var idx = currentSoundIndex + 1;
+				if(idx == document.links.length)
+					idx -= document.links.length;
+			    while ( idx != currentSoundIndex ) {
+					var link = document.links[idx];
+					if(link.className === 'pronus' || link.className === 'pronuk') {
+						currentSoundIndex = idx;
+						document.links[idx].focus();
+						document.links[idx].click();
+						if(link.hash && link.hash !== location.hash)
+						    location.hash = link.hash;
+						return;
+					}
+                    ++idx;		        
+	    			if(idx == document.links.length)
+    					idx -= document.links.length;
+			    }
+			}
+			
+			function prevSound() {
+			    var idx = currentSoundIndex - 1;
+				if(idx < 0)
+					idx += document.links.length;
+			    while ( idx != currentSoundIndex ) {
+					var link = document.links[idx];
+					if(link.className === 'pronus' || link.className === 'pronuk') {
+						currentSoundIndex = idx;
+						document.links[idx].focus();
+						document.links[idx].click();
+						if(link.hash && link.hash !== location.hash)
+						    location.hash = link.hash;
+						return;
+					}
+                    --idx;		        
+    				if(idx < 0)
+	    				idx += document.links.length;
+			    }
+			}
+			
       function GetWordListSortKey(pString) {
           var Lexsort = new Array(
          [ "A", "a", "", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�" ],
@@ -211,41 +259,18 @@
 			<input type="hidden" name="param7" />
 			<input type="hidden" name="param8" />
 			<input type="hidden" name="param9" />
-		</form>
-			
+		</form>			
 		<form>
-			<div id="Tab0" style="width:100%;height:100%;display:none;">
-				<p>Tab0</p>
-				<input type="button"
- value="callTester" onclick="callTester()" />
-  		</div>
-			<div id="Tab1" 	style="width:100%;height:100%;display:none;">
-				<p>Tab1</p>
-			</div>
-			<div id="Tab2" style="width:100%;height:100%;display:none;">
-				<p>Tab2</p>
-			</div>
-			<div id="Tab3" style="width:100%;height:100%;display:none;">
-				<p>Tab3</p>
-			</div>
-			<div id="Tab4" style="width:100%;height:100%;display:none;">
-				<p>Tab4</p>
-			</div>
-			<div id="Tab5" style="width:100%;height:100%;display:none;">
-				<p>Tab5</p>
-			</div>
-			<div id="Tab6" style="width:100%;height:100%;display:none;">
-				<p>Tab6</p>
-			</div>
-			<div id="Tab7" style="width:100%;height:100%;display:none;">
-				<p>Tab7</p>
-			</div>
-			<div id="Tab8" style="width:100%;height:100%;display:none;">
-				<p>Tab8</p>
-			</div>
-			<div id="Tab9" style="width:100%;height:100%;display:none;">
-				<p>Tab9</p>
-			</div>
+			<div id="Tab0" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab0</div>
+			<div id="Tab1" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab1</div>
+			<div id="Tab2" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab2</div>
+			<div id="Tab3" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab3</div>
+			<div id="Tab4" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab4</div>
+			<div id="Tab5" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab5</div>
+			<div id="Tab6" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab6</div>
+			<div id="Tab7" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab7</div>
+			<div id="Tab8" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab8</div>
+			<div id="Tab9" style="width:100%;height:100%;display:none;padding:0px;margin:0px;">Tab9</div>
 			<div id="debugTab" style="width:100%;height:100%;display:none;">
 				<textarea id="debug" readOnly="true" cols="80" rows="24">
 				</textarea >
@@ -253,11 +278,11 @@
 		</form>
 		<div id="Hidden" 		style="width:0%;height:0%;display:none;">			
 			<object 
-		  	id="MediaPlayer" 
+		  	    id="MediaPlayer" 
 		 		classid="CLSID:6BF52A52-394A-11D3-B153-00C04F79FAA6" 
 		 		type="application/x-oleobject"
 		 		uimode="none">
-	   	</object>
+	   	    </object>
 		</div>
 	</body>
 </html>
