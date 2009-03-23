@@ -29,14 +29,27 @@
         <span class="listHeader">
           [<xsl:value-of select="@begin" />-<xsl:value-of select="@end" />]/<xsl:value-of select="@total" />
         </span>
-        <br/>
-        <xsl:apply-templates />
+        <span class="listBody">
+          <table>
+            <xsl:for-each select="resultItem[position() mod 2 = 1]">
+              <tr>
+                <td width="50%" align="left">
+                  <xsl:apply-templates select="."/>
+                </td>
+                <td width="50%" align="left">
+                  <xsl:apply-templates select="following-sibling::resultItem[position() = 1]"/>
+                </td>
+              </tr>
+            </xsl:for-each>
+          </table>
+        </span>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template match="resultItem">
     <xsl:element name="a">
+    	<xsl:attribute name="target">resultItem</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/entry/filesystem.cff!/@</xsl:text>
@@ -47,17 +60,31 @@
         </xsl:if>
         <xsl:text>']);return false;</xsl:text>
       </xsl:attribute>
+      <xsl:attribute name="tabindex">
+        <xsl:value-of select="position()" />
+      </xsl:attribute>
       <xsl:apply-templates select="./label" />
     </xsl:element>
-    <br/>
   </xsl:template>
 
   <xsl:template match="wordlist">
     <span class="listHeader">
       [<xsl:value-of select="@begin" />-<xsl:value-of select="@end" />]/<xsl:value-of select="@total" />
     </span>
-    <br/>
-    <xsl:apply-templates />
+    <span class="listBody">
+      <table>
+        <xsl:for-each select="wordListItem[position() mod 2 = 1]">
+          <tr>
+            <td width="50%" align="left">
+              <xsl:apply-templates select="."/>
+            </td>
+            <td width="50%" align="left">
+              <xsl:apply-templates select="following-sibling::wordListItem[position() = 1]"/>
+            </td>
+          </tr>
+        </xsl:for-each>
+      </table>
+    </span>
   </xsl:template>
 
   <xsl:template match="wordListItem">
@@ -70,15 +97,18 @@
         <xsl:text>wordlist-</xsl:text>
         <xsl:value-of select="./entryId" />
       </xsl:attribute>
+      <xsl:attribute name="target">wordListItem</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('clickWordList', ["</xsl:text>
         <xsl:value-of select="./label" />
         <xsl:text>"]);return false;</xsl:text>
       </xsl:attribute>
+      <xsl:attribute name="tabindex">
+        <xsl:value-of select="position()" />
+      </xsl:attribute>
       <xsl:apply-templates select="./label"/>
     </xsl:element>
-    <br/>
   </xsl:template>
 
   <xsl:template match="wordListItem/label/*">
@@ -100,6 +130,11 @@
   </xsl:template>
 
   <xsl:template match="p:head">
+    <xsl:element name="a">
+      <xsl:attribute name="name">
+        <xsl:value-of select="./@url" />
+      </xsl:attribute>
+    </xsl:element>
     <span class="head">
       <xsl:apply-templates />
     </span>
@@ -337,6 +372,7 @@
   <xsl:template match="p:x">
     <xsl:text> : </xsl:text>
     <xsl:element name="a">
+    	<xsl:attribute name="target">px</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/entry/filesystem.cff!/@</xsl:text>
@@ -365,6 +401,7 @@
 
   <xsl:template match="p:ExtraExamples">
     <xsl:element name="a">
+    	<xsl:attribute name="target">ExtraExamples</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/extraexample/filesystem.cff!/</xsl:text>
@@ -392,6 +429,7 @@
 
   <xsl:template match="p:WordBuilding">
     <xsl:element name="a">
+    	<xsl:attribute name="target">WordBuilding</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -419,6 +457,7 @@
 
   <xsl:template match="p:Collocations">
     <xsl:element name="a">
+    	<xsl:attribute name="target">Collocations</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -446,6 +485,7 @@
 
   <xsl:template match="p:VerbInflections">
     <xsl:element name="a">
+    	<xsl:attribute name="target">VerbInflections</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -473,6 +513,7 @@
 
   <xsl:template match="p:VerbInflectionsNew">
     <xsl:element name="a">
+    	<xsl:attribute name="target">VerbInflectionsNew</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -500,6 +541,7 @@
 
   <xsl:template match="p:CommonLearnerError">
     <xsl:element name="a">
+    	<xsl:attribute name="target">CommonLearnerError</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -527,6 +569,7 @@
 
   <xsl:template match="p:UsageNote">
     <xsl:element name="a">
+    	<xsl:attribute name="target">UsageNote</xsl:attribute>
       <xsl:attribute name="href">.</xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('setContentTab', ['sk://fs/2.0/data/htmlpanel/filesystem.cff!/</xsl:text>
@@ -685,7 +728,11 @@
 
   <xsl:template match="span[@class='pronus']">
     <xsl:element name="a">
-      <xsl:attribute name="href">.</xsl:attribute>
+      <xsl:attribute name="class">pronus</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:text>#</xsl:text>
+        <xsl:value-of select="ancestor-or-self::*[@url][1]/@url" />
+      </xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('playSound', ['sk://fs/2.0/data/pronus/filesystem.cff!/</xsl:text>
         <xsl:value-of select="@path" />
@@ -712,7 +759,11 @@
 
   <xsl:template match="span[@class='pronuk']">
     <xsl:element name="a">
-      <xsl:attribute name="href">.</xsl:attribute>
+      <xsl:attribute name="class">pronuk</xsl:attribute>
+      <xsl:attribute name="href">
+        <xsl:text>#</xsl:text>
+        <xsl:value-of select="ancestor-or-self::*[@url][1]/@url" />
+      </xsl:attribute>
       <xsl:attribute name="onclick">
         <xsl:text>sendCommand('playSound', ['sk://fs/2.0/data/pronuk/filesystem.cff!/</xsl:text>
         <xsl:value-of select="@path" />
@@ -744,7 +795,11 @@
   </xsl:template>
 
   <xsl:template match="span[@class='atlink']">
-    <!-- ignore it -->
+    <!-- copy it -->
+    <span class="atlink">
+      <xsl:apply-templates />
+      <xsl:text> </xsl:text>
+    </span>
   </xsl:template>
 
   <xsl:template match="span[@class='numsense']">
