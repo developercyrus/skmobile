@@ -11,6 +11,12 @@ Cald2Mobile仅仅提供一个WM5的词典程序，在使用Cald2Mobile前你必�
 
 
 = 变更日志 =
+  == 0.70版 2009/03/23 ==
+  * [http://code.google.com/p/skmobile/issues/detail?id=20 NO.20 Issue]  允许配置是否启用自动InputPanel显示。
+  * [http://code.google.com/p/skmobile/issues/detail?id=21 NO.21 Issue]  使用硬键盘时字母自动输入input框。
+  * [http://code.google.com/p/skmobile/issues/detail?id=22 NO.22 Issue]  使用方向键选择链接（发音）。
+  * [http://code.google.com/p/skmobile/issues/detail?id=23 NO.23 Issue]  在WordList和Result中使用双列显示。
+  * [http://code.google.com/p/skmobile/issues/detail?id=24 NO.24 Issue]  将PAGE_SIZE从配置文件中移到HTML中，允许根据VGA/QVGA自动选择不同的值。
   == 0.64版 2007/08/14 ==
   * [http://code.google.com/p/skmobile/issues/detail?id=17 NO.17 Issue]  修正“查询结果不正确，总是显示许多‘A’开始的词条”BUG。
   * [http://code.google.com/p/skmobile/issues/detail?id=18 NO.18 Issue]  允许用户删除数据目录中的image、pronuk和pronus以减少磁盘占用。
@@ -90,9 +96,9 @@ Cald2Mobile目前的配置全部位于sk.ini文件中。
   * MYSK_WORDLIST_DELAY
     wordlist更新延时。单位为ms。缺省为2000，2s没有用户输入时更新wordlist页面。
   * MYSK_WORDLIST_PAGE_SIZE
-    缺省为15，在VGA模式下InputPannel出现时无需翻页。Cald2Mobile的wordlist页中使用分页显示。该设置项设置每页显示的词条数。
+    缺省为15，在VGA模式下InputPannel出现时无需翻页。Cald2Mobile的wordlist页中使用分页显示。该设置项设置每页显示的词条数。该设置已移到cald2_QVGA.html和cald2_VGA.html中第13行，允许QVGA和VGA设置不同的值。
   * MYSK_RESULTS_PAGE_SIZE
-    缺省为20，在VGA模式下无需翻页。Cald2Mobile的Results页中使用分页显示。该设置项设置每页显示的词条数。
+    缺省为20，在VGA模式下无需翻页。Cald2Mobile的Results页中使用分页显示。该设置项设置每页显示的词条数。该设置已移到cald2_QVGA.html和cald2_VGA.html中第16行，允许QVGA和VGA设置不同的值。
   * MYSK_QUERY_MODE
     缺省为7。该设置项设置缺省的查询模式。该设置项使用Bit位表示是否启用该查询模式。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。例如：该值设置为7时，表示HeadWord（标题词）、Phrase（词组）、Sense（意义）被选中。
   * MYSK_ZOOM_LEVEL
@@ -109,7 +115,7 @@ http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Initial.jpg
 
 http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Wordlist.jpg
 
-在词条列表页面列表页面，左右键被用做前一页和后一页的功能。上下键在同一页的词条间跳转。
+在词条列表页面列表页面，上下键被用做前一页和后一页的功能。左右键在同一页的词条间跳转。
 
   * 查询模式
     按下输入框旁边的M按钮，可以选择查询模式。查询模式包括HeadWord（标题词）、Phrase（词组）、Sense（意义）、Defines（在定义中全文查找）和Exampels(在例句中全文查找)。
@@ -126,7 +132,7 @@ Cald2Mobile会自动识别出单词的动词变化和复数变化。例如搜索
 
 Cald2Mobile同时还支持“×”和“？”的通配符检索。不过使用通配符将可能导致比较长的检索时间。
 
-在查询结果页面（Results），左右键被用做前一页和后一页的功能。上下键在同一页的词条间跳转。
+在查询结果页面（Results），上下键被用做前一页和后一页的功能。左右键在同一页的词条间跳转。
 
   * 词条解释页面  （Content）
   在查询结果页面（Results）中选择某一词条，将会跳转到词条解释页面（Content）。
@@ -137,10 +143,10 @@ http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Content.jpg
 
 http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Links.jpg
 
-这时可以使用左右键在浏览历史中跳转。上下键在同一页中PageUp/PageDown。
+这时可以使用左右键在同一页的链接间跳转。“,”和“.”在浏览历史中跳转。上下键在同一页中PageUp/PageDown。
 
   * 发音
-  如果在词条解释页面（Content）点击喇叭标志，将触发真人MP3发音。
+  如果在词条解释页面（Content）点击喇叭标志或者左右键选择发音链接然后点击，将触发真人MP3发音。
 
 http://skmobile.googlecode.com/svn/wiki/Cald2Mobile_Pron.jpg
 
