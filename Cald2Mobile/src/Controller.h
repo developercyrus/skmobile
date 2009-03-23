@@ -54,6 +54,8 @@ public :
 
 	virtual BOOL OnRightKey(UINT nRepCnt, UINT nFlags) = 0;
 
+	virtual BOOL OnChar(UINT nChar, UINT nRepCnt,UINT nFlags) = 0;
+
 	virtual LRESULT OnSimulateKey(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) = 0;
 
 };

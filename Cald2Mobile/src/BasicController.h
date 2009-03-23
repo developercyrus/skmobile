@@ -30,6 +30,7 @@ public :
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::Init(CMainFrame * mainFrame)");
 		m_mainFrame = mainFrame;
 		m_wordlistDelay = m_mainFrame->m_setting.LoadIntValue("MYSK_WORDLIST_DELAY", 2000);
+		m_isAutoShowInputPanel = m_mainFrame->m_setting.LoadBoolValue("MYSK_INPUTPANEL_AUTO_SHOW", TRUE);
 	}
 
 
@@ -160,12 +161,13 @@ public :
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnInputSetFocus");
 
 		// save the old status of the input panel, we will restore it when the focus is killed.
-		SIPINFO sipInfo = {0};
-		sipInfo.cbSize = sizeof SIPINFO;
-		::SipGetInfo(&sipInfo);
-		m_lastInputPannelStatus = 0 != (sipInfo.fdwFlags & SIPF_ON);
-
-		::SipShowIM(SIPF_ON);
+		if(m_isAutoShowInputPanel) {
+			SIPINFO sipInfo = {0};
+			sipInfo.cbSize = sizeof SIPINFO;
+			::SipGetInfo(&sipInfo);
+			m_lastInputPannelStatus = 0 != (sipInfo.fdwFlags & SIPF_ON);
+			::SipShowIM(SIPF_ON);
+		}
 		return S_OK;
 	}
 
@@ -175,7 +177,9 @@ public :
 	{
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnInputKillFocus");
 
-		::SipShowIM(m_lastInputPannelStatus ? SIPF_ON : SIPF_OFF);
+		if(m_isAutoShowInputPanel) {
+			::SipShowIM(m_lastInputPannelStatus ? SIPF_ON : SIPF_OFF);
+		}
 		return S_OK;
 	}
 
@@ -374,6 +378,42 @@ public :
 	{
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnRightKey");
 
+		return FALSE;
+	}
+
+
+
+	virtual BOOL OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		SK_TRACE(SK_LOG_DEBUG, "BasicController::OnChar(%d, %d, %d)", nChar, nRepCnt, nFlags);
+
+		HWND focusHwnd = GetFocus();
+		if(m_view->m_wndContentTabView.IsChild(focusHwnd))
+		{
+			switch(nChar)
+			{
+			case VK_BACK:
+				// Backup, delete all
+				m_view->m_wndInput.SetFocus();
+				m_view->m_wndInput.SetWindowText(_T(""));
+				return TRUE;
+			case '.':
+				this->nextSound();
+				return TRUE;
+			case ',':
+				this->prevSound();
+				return TRUE;
+			}
+			if(nChar >= 33 && nChar <= 128)
+			{
+				CAtlString word = (char)nChar;
+				m_view->m_wndInput.SetFocus();
+				m_view->m_wndInput.SetWindowText(_T(""));
+				m_view->m_wndInput.AppendText(word);
+				return TRUE;
+			}
+		}
+				
 		return FALSE;
 	}
 
@@ -877,6 +917,80 @@ protected :
 
 
 
+	BOOL nextSound()
+	{
+		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::nextAnchor()"));
+
+		if(!m_script.isReady())
+		{
+			SK_TRACE(SK_LOG_INFO, "The script engine isn't ready.");
+			return FALSE;
+		}
+
+		CComVariant result;
+		m_script.ExecuteStatement(_T("nextSound();"), &result);
+
+		return TRUE;
+	}
+
+
+
+	BOOL prevSound()
+	{
+		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::nextAnchor()"));
+
+		if(!m_script.isReady())
+		{
+			SK_TRACE(SK_LOG_INFO, "The script engine isn't ready.");
+			return FALSE;
+		}
+
+		CComVariant result;
+		m_script.ExecuteStatement(_T("prevSound();"), &result);
+
+		return TRUE;
+	}
+
+
+
+	UINT getWordListPageSize()
+	{
+		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::getWordListPageSize()"));
+
+		if(!m_script.isReady())
+		{
+			SK_TRACE(SK_LOG_INFO, "The script engine isn't ready.");
+			return FALSE;
+		}
+
+		CComVariant result;
+		TCHAR const* params[] = { _T("") };
+		size_t paramsCount = sizeof(params) / sizeof(TCHAR const*);
+		HRESULT hrc = m_script.Run(_T("getWordListPageSize"), &result, paramsCount, params);
+		return result.uintVal;
+	}
+
+
+
+	UINT getResultsPageSize()
+	{
+		SK_TRACE(SK_LOG_DEBUG, _T("BasicController::getResultsPageSize()"));
+
+		if(!m_script.isReady())
+		{
+			SK_TRACE(SK_LOG_INFO, "The script engine isn't ready.");
+			return FALSE;
+		}
+
+		CComVariant result;
+		TCHAR const* params[] = { _T("") };
+		size_t paramsCount = sizeof(params) / sizeof(TCHAR const*);
+		HRESULT hrc = m_script.Run(_T("getResultsPageSize"), &result, paramsCount, params);
+		return result.uintVal;
+	}
+
+
+
 	BOOL htmlPageUp()
 	{
 		SK_TRACE(SK_LOG_DEBUG, "BasicController::htmlPageUp");
@@ -1001,5 +1115,7 @@ protected :
 	UINT_PTR			m_inputChangedTimer;
 
 	UINT				m_wordlistDelay;
+
+	BOOL				m_isAutoShowInputPanel;
 
 };

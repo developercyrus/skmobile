@@ -42,7 +42,7 @@ public:
 				if(m_view.m_controller->OnRightKey(nRepCnt, nFlags))
 					return TRUE;
 				break;
-			}			
+			}
 		}   
 
 		if(CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))

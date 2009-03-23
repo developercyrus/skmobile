@@ -23,6 +23,15 @@ public:
 
 	BOOL PreTranslateMessage(MSG* pMsg)
 	{
+		if(pMsg->message == WM_CHAR) {
+			UINT nChar = pMsg->wParam;
+			UINT nRepCnt = pMsg->lParam & 0xFFFF;
+			UINT nFlags = ((pMsg->lParam & 0xFFFF0000) >> 16);
+
+			if(m_controller->OnChar(nChar, nRepCnt, nFlags))
+				return TRUE;
+		}
+
 		return CWindow::IsDialogMessage(pMsg);
 	}
 

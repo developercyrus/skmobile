@@ -127,8 +127,6 @@ public :
 
 		Base::Init(mainFrame);
 
-		m_wordListPageSize = mainFrame->m_setting.LoadIntValue("MYSK_WORDLIST_PAGE_SIZE", 15);
-		m_resultsPageSize = mainFrame->m_setting.LoadIntValue("MYSK_RESULTS_PAGE_SIZE", 20);
 		m_queryMode = mainFrame->m_setting.LoadIntValue("MYSK_QUERY_MODE", 0x07);
 		m_zoomLevel = mainFrame->m_setting.LoadIntValue("MYSK_ZOOM_LEVEL", 2);
 
@@ -234,6 +232,10 @@ public :
 				Base::addQueryMode(info.name);
 			}
 			Base::setQueryMode(m_queryMode);
+
+			//read page sizes
+			m_wordListPageSize = Base::getWordListPageSize();
+			m_resultsPageSize = Base::getResultsPageSize();
 			
 			// initial XSL
 			CAtlString xslPath;
@@ -268,6 +270,7 @@ public :
 
 		if(m_view->m_wndContentTabView.IsChild(::GetFocus()))
 		{
+			return FALSE;
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
 			if(title == TAB_NAME_WORDLIST || title == TAB_NAME_RESULTS)
@@ -301,10 +304,34 @@ public :
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
-			if(title == TAB_NAME_CONTENT)
+			if(title == TAB_NAME_WORDLIST)
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
+
+				// word list page view				
+				this->setWordListPage(m_currentWordListBegin - m_wordListPageSize);
+				return TRUE;
+			}
+			else if(title == TAB_NAME_RESULTS)
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
+
+				// result page view
+				this->setResultPage(m_currentResultsBegin - m_resultsPageSize);
+				return TRUE;
+			}
+			else if(title == TAB_NAME_CONTENT)
 			{
 				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
+
 				Base::htmlPageUp();
+				return TRUE;
+			}
+			else
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
+				// goto prev tab
+				Base::prevTab();
 				return TRUE;
 			}
 		}
@@ -330,10 +357,35 @@ public :
 		{
 			int activeTab = m_view->m_wndContentTabView.GetActivePage();
 			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
-			if(title == TAB_NAME_CONTENT)
+			if(title == TAB_NAME_WORDLIST)
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
+
+				// word list page view
+				this->setWordListPage(m_currentWordListBegin + m_wordListPageSize);
+				return TRUE;
+			}
+			else if(title == TAB_NAME_RESULTS)
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
+
+				// result page view
+				this->setResultPage(m_currentResultsBegin + m_resultsPageSize);
+				return TRUE;
+			}
+			else if(title == TAB_NAME_CONTENT)
 			{
 				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
+
 				Base::htmlPageDown();
+				return TRUE;
+			}
+			else
+			{
+				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
+
+				// goto next tab
+				Base::nextTab();
 				return TRUE;
 			}
 		}
@@ -355,43 +407,12 @@ public :
 		}
 		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
-			int activeTab = m_view->m_wndContentTabView.GetActivePage();
-			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
-			if(title == TAB_NAME_WORDLIST)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
-
-				// word list page view				
-				this->setWordListPage(m_currentWordListBegin - m_wordListPageSize);
-				return TRUE;
-			}
-			else if(title == TAB_NAME_RESULTS)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
-
-				// result page view
-				this->setResultPage(m_currentResultsBegin - m_resultsPageSize);
-				return TRUE;
-			}
-			else if(title == TAB_NAME_CONTENT)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
-
-				// navigate in history
-				CAtlString prevUrlPath = m_contentHistory.GetPrev();
-				if(!prevUrlPath.IsEmpty())
-				{
-					this->handleSetContentTab(prevUrlPath, FALSE);
-				}
-				return TRUE;
-			}
-			else
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
-				// goto prev tab
-				Base::prevTab();
-				return TRUE;
-			}
+			// simulate shift + tab
+			keybd_event(VK_SHIFT, 0, KEYEVENTF_SILENT, 0);
+			keybd_event(VK_TAB, 0, KEYEVENTF_SILENT, 0);
+			keybd_event(VK_TAB, 0, KEYEVENTF_SILENT | KEYEVENTF_KEYUP, 0);
+			keybd_event(VK_SHIFT, 0, KEYEVENTF_SILENT | KEYEVENTF_KEYUP, 0);
+			return TRUE;
 		}
 		return Base::OnLeftKey(nRepCnt, nFlags);
 	}
@@ -411,46 +432,54 @@ public :
 		}
 		else if(m_view->m_wndContentTabView.IsChild(focusHwnd))
 		{
-			int activeTab = m_view->m_wndContentTabView.GetActivePage();
-			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
-			if(title == TAB_NAME_WORDLIST)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In wordlist tab.");
-
-				// word list page view
-				this->setWordListPage(m_currentWordListBegin + m_wordListPageSize);
-				return TRUE;
-			}
-			else if(title == TAB_NAME_RESULTS)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In results tab.");
-
-				// result page view
-				this->setResultPage(m_currentResultsBegin + m_resultsPageSize);
-				return TRUE;
-			}
-			else if(title == TAB_NAME_CONTENT)
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In content tab.");
-
-				// navigate in history
-				CAtlString nextUrlPath = m_contentHistory.GetNext();
-				if(!nextUrlPath.IsEmpty())
-				{
-					this->handleSetContentTab(nextUrlPath, FALSE);
-				}
-				return TRUE;
-			}
-			else
-			{
-				SK_TRACE(SK_LOG_DEBUG, "In other tab.");
-
-				// goto next tab
-				Base::nextTab();
-				return TRUE;
-			}
+			// simulate tab
+			keybd_event(VK_TAB, 0, KEYEVENTF_SILENT, 0);
+			keybd_event(VK_TAB, 0, KEYEVENTF_SILENT | KEYEVENTF_KEYUP, 0);
+			return TRUE;
 		}
 		return Base::OnRightKey(nRepCnt, nFlags);
+	}
+
+
+
+	virtual BOOL OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		SK_TRACE(SK_LOG_DEBUG, "Cald2Controller::OnChar(%d, %d, %d)", nChar, nRepCnt, nFlags);
+
+		HWND focusHwnd = GetFocus();
+		if(m_view->m_wndContentTabView.IsChild(focusHwnd))
+		{
+			int activeTab = m_view->m_wndContentTabView.GetActivePage();
+			CAtlString title = m_view->m_wndContentTabView.GetPageTitle(activeTab);
+			if(title == TAB_NAME_CONTENT)
+			{
+				switch(nChar)
+				{
+				case '.':
+					{
+						// navigate in history
+						CAtlString nextUrlPath = m_contentHistory.GetNext();
+						if(!nextUrlPath.IsEmpty())
+						{
+							this->handleSetContentTab(nextUrlPath, FALSE);
+						}
+						return TRUE;
+					}
+				case ',':
+					{
+						// navigate in history
+						CAtlString prevUrlPath = m_contentHistory.GetPrev();
+						if(!prevUrlPath.IsEmpty())
+						{
+							this->handleSetContentTab(prevUrlPath, FALSE);
+						}
+						return TRUE;
+					}
+				}
+			}
+		}
+		
+		return Base::OnChar(nChar, nRepCnt, nFlags);
 	}
 
 
