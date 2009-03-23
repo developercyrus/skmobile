@@ -192,6 +192,7 @@ span.xref
 	display: block;
 	margin-left: 4px;
 	padding-top: 2px;
+
 }
 
 span.x
@@ -441,6 +442,12 @@ span.listHeader
 	color: blue;
 }
 
+span.listBody
+{
+	font-family: "Charis SIL";
+	font-size: 9px;
+}
+
 span.listItem
 {
 	font-family: "Charis SIL";
@@ -453,4 +460,15 @@ span.wordlistHW
 	font-size: 10px;
 	font-weight: bold;
 	color: #000080;
+}
+
+body {
+	background-color: white;
+	padding: 0px;
+	margin: 0px;
+}
+
+.atlink {
+	font-style: normal;
+	font-size: 8pt;
 }
