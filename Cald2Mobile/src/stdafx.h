@@ -17,6 +17,7 @@
 #include <atlsafe.h>
 #include <atlutil.h>
 
+#define _SECURE_ATL 1
 #include <atlapp.h>
 
 extern CAppModule _Module;
